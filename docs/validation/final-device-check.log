@@ -1,0 +1,7 @@
+{
+  "status": "CardputerDict 0.1.0 board=14 heap=195688 sd=1 words=770611 source=ECDICT 英汉词典\nnote=",
+  "apple": "LOOKUP: apple\n/'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples",
+  "missing": "NOT_FOUND",
+  "pinyin": "CANDIDATES: 苹秤冯砰聘乒坪萍平凭瓶评屏俜堋娉枰鲆",
+  "passed": true
+}

@@ -1,0 +1,44 @@
+[
+  {
+    "file": "demo.dict",
+    "bytes": 1770,
+    "fnv1a": "c2b68d86",
+    "seconds": 0.05,
+    "result": "DONE verified"
+  },
+  {
+    "file": "demo.idx",
+    "bytes": 419,
+    "fnv1a": "b14f4a52",
+    "seconds": 0.04,
+    "result": "DONE verified"
+  },
+  {
+    "file": "ECDICT-LICENSE.txt",
+    "bytes": 1063,
+    "fnv1a": "2b774e8a",
+    "seconds": 0.05,
+    "result": "DONE verified"
+  },
+  {
+    "file": "pinyin-data-LICENSE.txt",
+    "bytes": 1076,
+    "fnv1a": "13ac3155",
+    "seconds": 0.05,
+    "result": "DONE verified"
+  },
+  {
+    "file": "sources.json",
+    "bytes": 498,
+    "fnv1a": "2713687c",
+    "seconds": 0.14,
+    "result": "DONE verified"
+  },
+  {
+    "file": "demo.ifo",
+    "bytes": 127,
+    "fnv1a": "d2d3e053",
+    "seconds": 0.05,
+    "result": "DONE verified"
+  }
+]

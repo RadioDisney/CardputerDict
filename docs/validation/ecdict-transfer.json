@@ -1,0 +1,41 @@
+[
+  {
+    "file": "ecdict.dict",
+    "bytes": 29992192,
+    "fnv1a": "3e1c3dbf",
+    "seconds": 170.5,
+    "result": "DONE verified"
+  },
+  {
+    "file": "ecdict.idx",
+    "bytes": 17035288,
+    "fnv1a": "d24d9a83",
+    "seconds": 94.9,
+    "result": "DONE verified"
+  },
+  {
+    "file": "ECDICT-LICENSE.txt",
+    "bytes": 1063,
+    "fnv1a": "2b774e8a",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "pinyin-data-LICENSE.txt",
+    "bytes": 1076,
+    "fnv1a": "13ac3155",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "sources.json",
+    "bytes": 498,
+    "fnv1a": "2713687c",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "ecdict.ifo",
+    "bytes": 125,
+    "fnv1a": "8bdeab11",
+    "seconds": 0.05,
+    "result": "DONE verified"
+  }
+]

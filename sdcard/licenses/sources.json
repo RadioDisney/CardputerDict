@@ -1,0 +1,14 @@
+{
+  "ecdict.csv": {
+    "source": "https://raw.githubusercontent.com/skywind3000/ECDICT/master/ecdict.csv",
+    "bytes": 66009548,
+    "sha256": "d1ecbdf9ee2b920afb6f430ca6b6bb9f559588cf0dff86e04bd255f9390843cc",
+    "downloaded": "2026-11-10"
+  },
+  "pinyin.txt": {
+    "source": "https://raw.githubusercontent.com/mozillazg/pinyin-data/master/pinyin.txt",
+    "bytes": 985559,
+    "sha256": "2342a6f98c85dbc3c8d26aef31744876a36326c6466e51e9a0f16898c36c2011",
+    "downloaded": "2026-11-10"
+  }
+}

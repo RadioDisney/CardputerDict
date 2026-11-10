@@ -1,0 +1,6 @@
+M5Cardputer 1.1.1
+https://github.com/m5stack/M5Cardputer
+SPDX-FileCopyrightText: 2025 M5Stack Technology CO LTD
+SPDX-License-Identifier: MIT
+
+The MIT license is included in M5Unified-LICENSE.txt.

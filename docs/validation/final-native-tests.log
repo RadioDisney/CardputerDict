@@ -1,0 +1,12 @@
+Validated real dictionary: 29 headwords, 4 sparse index bytes
+Core tests passed: 10000 reference lookups, duplicate boundaries, malformed data, Chinese UTF-8.
+test_ecdict_forms (test_tools.DictionaryToolsTest.test_ecdict_forms) ... ok
+test_reject_invalid (test_tools.DictionaryToolsTest.test_reject_invalid) ... ok
+test_stardict_order_offsets_unicode (test_tools.DictionaryToolsTest.test_stardict_order_offsets_unicode) ... ok
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.002s
+
+OK
+Validated real dictionary: 770611 headwords, 48164 sparse index bytes
+Core tests passed: 10000 reference lookups, duplicate boundaries, malformed data, Chinese UTF-8.
