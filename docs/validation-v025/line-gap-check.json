@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "status": "CardputerDict 0.2.5 board=14 heap=147720 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=2 line_step=16 rows=5\nlexicons en=770611 zh=0 ime=0\nnote=\nCMD_DONE",
+  "font_height": 14,
+  "line_gap": 2,
+  "line_step": 16,
+  "rows_per_page": 5,
+  "pixel_rows": [
+    {
+      "row": 1,
+      "previous_y": 43,
+      "new_y": 43
+    },
+    {
+      "row": 2,
+      "previous_y": 58,
+      "new_y": 59
+    },
+    {
+      "row": 3,
+      "previous_y": 73,
+      "new_y": 75
+    },
+    {
+      "row": 4,
+      "previous_y": 88,
+      "new_y": 91
+    },
+    {
+      "row": 5,
+      "previous_y": 103,
+      "new_y": 107
+    }
+  ],
+  "pagination_verified": true
+}

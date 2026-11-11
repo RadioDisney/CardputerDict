@@ -6,11 +6,17 @@
 #include "pinyin_data.h"
 #include "body_font.h"
 #include "ime_core.h"
+#include "ui_text.h"
 
 namespace {
 constexpr uint16_t BG = 0x0863, FG = 0xef7d, MUTED = 0x8c92;
 constexpr uint16_t ACCENT = 0x4e59, SELECT = 0x1a89, PANEL = 0x1105;
 constexpr int kRows = 5;
+constexpr int kWordListTop = 43;
+constexpr int kWordListLineStep = 17;  // Previous 15-pixel row step plus 2 pixels.
+constexpr int kDefinitionTop = 43;
+constexpr int kDefinitionBottom = 121;
+constexpr int kDefinitionLineGap = 4;
 M5Canvas canvas(&M5Cardputer.Display);
 bool spriteReady = false;
 
@@ -62,17 +68,23 @@ void switchDirection(bool chinese);
 
 void printAt(const std::string& text, int x, int y, uint16_t color = FG) {
     canvas.setTextColor(color);
-    canvas.setCursor(x, y);
-    canvas.print(text.c_str());
+    ui::printText(canvas, text, x, y);
+}
+
+int textWidth(const std::string& text) { return ui::textWidth(canvas, text); }
+
+void printScreenAt(std::string text, int x, int y) {
+    while (!text.empty() && ui::textWidth(screen(), text) > screen().width() - x - 4) dict::popUtf8(text);
+    ui::printText(screen(), text, x, y);
 }
 
 std::string fitEnd(std::string text, int width) {
-    while (!text.empty() && canvas.textWidth(text.c_str()) > width) dict::popUtf8(text);
+    while (!text.empty() && textWidth(text) > width) dict::popUtf8(text);
     return text;
 }
 
 std::string fitTail(std::string text, int width) {
-    while (!text.empty() && canvas.textWidth(text.c_str()) > width)
+    while (!text.empty() && textWidth(text) > width)
         text.erase(0, dict::utf8Length(uint8_t(text[0])));
     return text;
 }
@@ -81,17 +93,15 @@ void paintProgress(uint32_t done, uint32_t total) {
     screen().setFont(&kBodyFont);
     screen().setTextColor(FG, BG);
     screen().fillScreen(BG);
-    screen().setCursor(8, 30);
-    screen().print("正在建立词库索引");
-    screen().setCursor(8, 55);
-    screen().printf("%lu / %lu", (unsigned long)done, (unsigned long)total);
+    printScreenAt("正在建立词库索引", 8, 30);
+    printScreenAt(std::to_string(done) + " / " + std::to_string(total), 8, 55);
     screen().drawRect(8, 85, 224, 8, MUTED);
     screen().fillRect(9, 86, total ? uint64_t(done) * 222 / total : 0, 6, ACCENT);
     delay(1);
 }
 
 void updateCandidates() {
-    candidatePage = 0;
+    composer.resetLayout();
     candidates.clear();
     if (composition.empty()) return;
     const std::string code = ime::normalize(composition);
@@ -128,6 +138,8 @@ void updateCandidates() {
             return std::find(completions.begin(), completions.end(), query + candidate) != completions.end();
         });
     }
+    canvas.setFont(&fonts::efontCN_16);
+    composer.reflow([](const std::string& text) { return textWidth(text); });
 }
 
 void refreshMatches() {
@@ -151,7 +163,7 @@ void scheduleSearch() {
 
 void clearQuery() {
     query.clear(); composition.clear(); candidates.clear();
-    candidatePage = 0;
+    composer.resetLayout();
     page = Page::Search;
     refreshMatches();
 }
@@ -285,6 +297,29 @@ void nextDictionary() {
     clearQuery();
 }
 
+int bodyFontHeight() {
+    lgfx::FontMetrics metrics = {};
+    kBodyFont.getDefaultMetric(&metrics);
+    return std::max(1, int(metrics.height));
+}
+
+int definitionLineStep() { return bodyFontHeight() + kDefinitionLineGap; }
+
+int definitionRows() {
+    return std::max(1, (kDefinitionBottom - kDefinitionTop + kDefinitionLineGap) / definitionLineStep());
+}
+
+int wordListRows() {
+    const int bottom = composition.empty() ? 121 : 88;
+    return std::min(kRows, std::max(1, (bottom - kWordListTop + kWordListLineStep - bodyFontHeight()) / kWordListLineStep));
+}
+
+int wordListStart() {
+    const int total = usingSd ? int(matches.size()) : int(demoMatches.size());
+    const int rows = wordListRows();
+    return std::max(0, std::min(selected - rows + 1, std::max(0, total - rows)));
+}
+
 void wrapDefinition() {
     lines.clear();
     canvas.setFont(&kBodyFont);
@@ -294,12 +329,12 @@ void wrapDefinition() {
         if (c == '\r') { ++pos; continue; }
         if (c == '\n') { lines.push_back(current); current.clear(); ++pos; continue; }
         const size_t bytes = std::min(dict::utf8Length(c), definition.size() - pos);
-        const auto glyph = definition.substr(pos, bytes);
+        const auto glyph = c == '\t' ? std::string(" ") : definition.substr(pos, bytes);
         pos += bytes;
-        if (!current.empty() && canvas.textWidth((current + glyph).c_str()) > 228) {
+        if (!current.empty() && textWidth(current + glyph) > 228) {
             lines.push_back(current); current.clear();
         }
-        current += c == '\t' ? " " : glyph;
+        current += glyph;
     }
     if (!current.empty() || lines.empty()) lines.push_back(current);
     definitionPage = 0;
@@ -331,13 +366,12 @@ void chooseCandidate(int number) {
 
 void move(int amount) {
     if (page == Page::Definition) {
-        const int maxPage = int((lines.size() - 1) / kRows);
+        const int maxPage = int((lines.size() - 1) / definitionRows());
         definitionPage = std::max(0, std::min(maxPage, definitionPage + amount));
     } else if (page == Page::Search) {
         if (searchPending) refreshMatches();
         const int total = usingSd ? matches.size() : demoMatches.size();
-        const int count = composition.empty() ? total : std::min(3, total);
-        selected = std::max(0, std::min(std::max(0, count - 1), selected + amount));
+        selected = std::max(0, std::min(std::max(0, total - 1), selected + amount));
     }
     dirty = true;
 }
@@ -361,7 +395,7 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
     }
     if (base == '`') {
         if (page != Page::Search) page = Page::Search;
-        else if (!composition.empty()) { composition.clear(); candidates.clear(); }
+        else if (!composition.empty()) { composition.clear(); candidates.clear(); composer.resetLayout(); }
         else clearQuery();
         dirty = true; return;
     }
@@ -384,7 +418,7 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
     if (page != Page::Search) { page = Page::Search; query.clear(); }
     const char c = state.shift ? key.value_second : base;
     if (pinyin && !composition.empty()) {
-        if (c >= '1' && c < '1' + ime::kPageSize) { chooseCandidate(c - '1'); return; }
+        if (c >= '1' && c <= '9') { chooseCandidate(c - '1'); return; }
         if (c >= '0' && c <= '9') return;
         if (c == ' ') { chooseCandidate(0); return; }
         if (c == '[' || c == ']') {
@@ -409,19 +443,20 @@ void render() {
     printAt(pinyin ? "汉英" : "英汉", 205, 2, ACCENT);
     if (page == Page::Help) {
         canvas.setFont(&kBodyFont);
-        const char* help[] = {"Tab: 英汉/汉英  Enter:查词", "Fn+; / Fn+.: 选择或翻页", "全拼: 空格首选  1-3选词", "[ / ]: 候选翻页  v代表ü", "Fn+D: 切换词库  Fn+R: 重载", "Fn+退格: 清空  `: 返回"};
+        const char* help[] = {"Tab 切换  Enter 查词", "Fn+; / Fn+. 上下/翻页", "空格首选  1-9 选词", "[ / ] 翻候选  v=ü", "Fn+D 换词库  Fn+R 重载", "Fn+退格 清空  ` 返回"};
         for (size_t i = 0; i < 6; ++i) printAt(help[i], 4, 23 + int(i) * 16);
     } else if (page == Page::Definition) {
         canvas.setFont(&fonts::efontCN_16);
         printAt(fitEnd(headword, 228), 5, 21, ACCENT);
         canvas.drawFastHLine(4, 40, 232, SELECT);
         canvas.setFont(&kBodyFont);
-        for (int row = 0; row < kRows; ++row) {
-            const size_t i = size_t(definitionPage * kRows + row);
-            if (i < lines.size()) printAt(lines[i], 5, 43 + row * 15);
+        const int rows = definitionRows();
+        for (int row = 0; row < rows; ++row) {
+            const size_t i = size_t(definitionPage * rows + row);
+            if (i < lines.size()) printAt(lines[i], 5, kDefinitionTop + row * definitionLineStep());
         }
         canvas.setFont(&fonts::efontCN_12);
-        const std::string footer = std::to_string(definitionPage + 1) + "/" + std::to_string((lines.size() + kRows - 1) / kRows) + "  Space:下一页  `:返回";
+        const std::string footer = std::to_string(definitionPage + 1) + "/" + std::to_string((lines.size() + rows - 1) / rows) + "  Space:下一页  `:返回";
         printAt(footer, 5, 121, MUTED);
     } else {
         canvas.setFont(&fonts::efontCN_16);
@@ -429,34 +464,37 @@ void render() {
         canvas.drawFastHLine(4, 40, 232, SELECT);
         canvas.setFont(&kBodyFont);
         const size_t count = usingSd ? matches.size() : demoMatches.size();
-        const size_t visible = composition.empty() ? kRows : 3;
-        for (size_t row = 0; row < std::min(count, visible); ++row) {
-            const int y = 43 + row * 15;
-            const auto word = usingSd ? matches[row].word : std::string(kDemo[demoMatches[row]].word);
-            if (int(row) == selected) canvas.fillRoundRect(3, y - 1, 234, 15, 2, SELECT);
-            canvas.setTextColor(FG);
-            canvas.setCursor(7, y);
-            canvas.print(fitEnd(word, 222).c_str());
+        const size_t start = wordListStart();
+        const size_t end = std::min(count, start + wordListRows());
+        for (size_t index = start; index < end; ++index) {
+            const int y = kWordListTop + int(index - start) * kWordListLineStep;
+            const auto word = usingSd ? matches[index].word : std::string(kDemo[demoMatches[index]].word);
+            if (int(index) == selected) canvas.fillRoundRect(3, y - 1, 234, 15, 2, SELECT);
+            printAt(fitEnd(word, 222), 7, y);
         }
         if (query.empty()) {
-            printAt(pinyin ? "全拼输入，空格或1-3选词" : "输入英文后按Enter查询", 5, 45, MUTED);
+            printAt(pinyin ? "全拼输入，空格或数字选词" : "输入英文后按Enter查询", 5, 45, MUTED);
             if (pinyin) printAt("选词后按Enter查询释义", 5, 63, MUTED);
         } else if (count == 0) printAt("未找到；可换词库或缩短输入", 5, 45, MUTED);
         if (!composition.empty()) {
             canvas.fillRect(0, 88, 240, 33, PANEL);
             canvas.setFont(&fonts::efontCN_12);
-            const size_t pages = std::max(size_t(1), (candidates.size() + ime::kPageSize - 1) / ime::kPageSize);
             printAt(fitTail(composition, 170), 4, 88, ACCENT);
-            printAt(std::to_string(candidatePage + 1) + "/" + std::to_string(pages), 196, 88, ACCENT);
+            printAt(std::to_string(candidatePage + 1) + "/" + std::to_string(composer.pageCount()), 196, 88, ACCENT);
             canvas.setFont(&fonts::efontCN_16);
-            for (int i = 0; i < ime::kPageSize; ++i) {
-                const size_t index = candidatePage * ime::kPageSize + i;
-                if (index >= candidates.size()) break;
+            for (size_t i = 0; i < composer.visibleCount(); ++i) {
+                const size_t index = composer.pageStart() + i;
+                if (index >= candidates.size() || index >= composer.placements.size()) break;
                 const auto& word = candidates[index];
-                auto label = fitEnd(word, 56);
-                if (label != word) label = fitEnd(word, 40) + "…";
-                printAt(std::to_string(i + 1), 4 + i * 80, 102, ACCENT);
-                printAt(label, 16 + i * 80, 102);
+                const auto& position = composer.placements[index];
+                auto label = fitEnd(word, position.wordWidth);
+                if (label != word) {
+                    while (!label.empty() && textWidth(label + "…") > position.wordWidth) dict::popUtf8(label);
+                    label += "…";
+                }
+                const int x = 4 + position.x, y = 102;
+                printAt(std::to_string(i + 1), x, y, ACCENT);
+                printAt(label, x + position.labelWidth + 1, y);
             }
             if (candidates.empty()) printAt("无候选，请检查拼音", 4, 102);
         }
@@ -540,9 +578,10 @@ void receiveFile(const std::string& request) {
         Serial.flush();
         if (millis() - lastDraw > 500) {
             screen().fillScreen(BG); screen().setFont(&kBodyFont);
-            screen().setTextColor(FG); screen().setCursor(6, 30);
-            screen().print("USB 词库传输中"); screen().setCursor(6, 55); screen().print(name);
-            screen().setCursor(6, 80); screen().printf("%lu / %lu KB", (unsigned long)(received / 1024), length / 1024);
+            screen().setTextColor(FG);
+            printScreenAt("USB 词库传输中", 6, 30);
+            printScreenAt(name, 6, 55);
+            printScreenAt(std::to_string(received / 1024) + " / " + std::to_string(length / 1024) + " KB", 6, 80);
             lastDraw = millis();
         }
         delay(1);
@@ -578,8 +617,9 @@ bool injectCharacter(char c) {
 }
 
 void printInputState() {
-    Serial.printf("STATE direction=%s query=%s composition=%s page=%d candidate_page=%d\n",
-                  pinyin ? "zh-en" : "en-zh", query.c_str(), composition.c_str(), int(page), candidatePage);
+    Serial.printf("STATE direction=%s query=%s composition=%s page=%d candidate_page=%d visible=%u candidate_start=%u selected=%d list_start=%d list_rows=%d\n",
+                  pinyin ? "zh-en" : "en-zh", query.c_str(), composition.c_str(), int(page), candidatePage,
+                  unsigned(composer.visibleCount()), unsigned(composer.pageStart()), selected, wordListStart(), wordListRows());
     if (page == Page::Definition) Serial.printf("TEXT: %s\n", definition.c_str());
 }
 
@@ -593,9 +633,12 @@ void serialCommand() {
             if (overflow) Serial.println("ERR command too long");
             else if (command.rfind("put ", 0) == 0) receiveFile(command);
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.2.0 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                Serial.printf("CardputerDict 0.2.7 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
                               (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
+                Serial.println("spacing half=1 full=2");
+                Serial.printf("definition font_height=%d line_gap=%d line_step=%d rows=%d\n", bodyFontHeight(), kDefinitionLineGap, definitionLineStep(), definitionRows());
+                Serial.printf("results line_step=%d rows=%d start=%d selected=%d count=%u\n", kWordListLineStep, wordListRows(), wordListStart(), selected, unsigned(usingSd ? matches.size() : demoMatches.size()));
                 Serial.printf("lexicons en=%lu zh=%lu ime=%lu\n", (unsigned long)(englishLexicon.loaded ? englishLexicon.dictionary.count() : 0),
                               (unsigned long)(chineseLexicon.loaded ? chineseLexicon.dictionary.count() : 0),
                               (unsigned long)(pinyinLexicon.loaded ? pinyinLexicon.dictionary.count() : 0));
@@ -630,6 +673,8 @@ void serialCommand() {
                 else if (key == "backspace") handleKey(13, 0, state);
                 else if (key == "space") injectCharacter(' ');
                 else if (key == "clear") { state.fn = true; handleKey(13, 0, state); }
+                else if (key == "down") { state.fn = true; handleKey(11, 3, state); }
+                else if (key == "up") { state.fn = true; handleKey(11, 2, state); }
                 else if (key.size() == 1) injectCharacter(key[0]);
                 else Serial.println("ERR unknown key");
                 printInputState();
@@ -667,7 +712,9 @@ void setup() {
     spriteReady = canvas.createSprite(screen().width(), screen().height()) != nullptr;
     if (!spriteReady) {
         screen().fillScreen(BG); screen().setTextColor(FG);
-        screen().println("Not enough RAM for screen buffer");
+        screen().setFont(&kBodyFont);
+        printScreenAt("Not enough RAM", 6, 30);
+        printScreenAt("for screen buffer", 6, 50);
         return;
     }
     scanSd();

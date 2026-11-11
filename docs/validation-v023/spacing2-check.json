@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "status": "Loaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nCardputerDict ready. Commands: status, lookup apple, reload\r\nCardputerDict 0.2.3 board=14 heap=147728 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nlexicons en=770611 zh=0 ime=0\nnote=\nCMD_DONE",
+  "before_first_line_bounds": [
+    6,
+    44,
+    56,
+    56
+  ],
+  "after_first_line_bounds": [
+    6,
+    44,
+    61,
+    56
+  ],
+  "expected_extra_width": 5,
+  "actual_extra_width": 5,
+  "apple": "LOOKUP: apple\n/'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\r\nCMD_DONE",
+  "long_word": "LOOKUP: dictionary\n/'dikʃәnәri/\nn. 字典, 词典\n[计] 词典\n\n复数: dictionaries\r\nCMD_DONE",
+  "chinese": "Loaded CC-CEDICT 汉英: 198650 headwords, 12416 sparse index bytes\nLoaded CC-CEDICT Pinyin IME: 85610 headwords, 5352 sparse index bytes\nLOOKUP: 你好\n[ni3 hao3]\nhello; hi\r\nCMD_DONE"
+}

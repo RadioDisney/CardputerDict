@@ -1,0 +1,85 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "English title",
+      "before": [
+        6,
+        5,
+        88,
+        11
+      ],
+      "after": [
+        6,
+        5,
+        101,
+        11
+      ],
+      "delta": 13
+    },
+    {
+      "name": "English headword",
+      "before": [
+        6,
+        25,
+        43,
+        36
+      ],
+      "after": [
+        6,
+        25,
+        47,
+        36
+      ],
+      "delta": 4
+    },
+    {
+      "name": "IPA halfwidth",
+      "before": [
+        6,
+        44,
+        61,
+        56
+      ],
+      "after": [
+        6,
+        44,
+        56,
+        56
+      ],
+      "delta": -5
+    },
+    {
+      "name": "Mixed Chinese-English",
+      "before": [
+        6,
+        58,
+        110,
+        71
+      ],
+      "after": [
+        6,
+        58,
+        105,
+        71
+      ],
+      "delta": -5
+    },
+    {
+      "name": "Chinese headword",
+      "before": [
+        6,
+        21,
+        35,
+        36
+      ],
+      "after": [
+        6,
+        21,
+        37,
+        36
+      ],
+      "delta": 2
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "status": "CardputerDict 0.2.6 board=14 heap=147728 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nlexicons en=770611 zh=0 ime=0\nnote=\nCMD_DONE",
+  "tesla": "LOOKUP: Tesla\n/'teslә/\n[电] 特斯拉\r\nCMD_DONE",
+  "source_codepoint": "U+04D9 CYRILLIC SMALL LETTER SCHWA",
+  "glyph_size": [
+    8,
+    7
+  ],
+  "glyph_positions": [
+    [
+      53,
+      48
+    ]
+  ],
+  "glyph_absent_before": true,
+  "line_gap": 4,
+  "line_step": 18,
+  "rows_per_page": 4,
+  "final_line_pagination_verified": true
+}

@@ -50,6 +50,7 @@ int main(int argc, char** argv) {
     assert(committed == "苹果" && composer.input.empty() && composer.candidates.empty());
     dict::popUtf8(committed); assert(committed == "苹");
     composer.input = "guo"; composer.candidates = {"国", "过", "果", "锅"};
+    composer.reflow([](const std::string& text) { return ime::hasHan(text) ? 16 : 8; }, 83);
     composer.turnPage(1); assert(composer.page == 1);
     assert(!composer.select(1, committed));
     assert(composer.select(0, committed) && committed == "苹锅");

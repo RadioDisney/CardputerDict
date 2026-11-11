@@ -1,4 +1,4 @@
-CardputerDict 0.2 SD assets
+CardputerDict 0.2.1 SD assets
 
 Copy dictionaries/ and licenses/ to the root of a FAT32 microSD card.
 
@@ -9,7 +9,7 @@ Demo: 29 English/Chinese headwords.
 
 Tab switches English-Chinese / Chinese-English and clears the input.
 Type pingguo, choose Apple/苹果 with Space or 1, then Enter to look it up.
-Candidates: 1-3; previous/next page: [ and ]; v for umlaut u.
+Candidates: 1-9, packed on a single line according to word width; previous/next page: [ and ]; v for umlaut u.
 Fn+H: help. Fn+R: reload.
 
 Derived cedict.* and pinyin.* data: CC BY-SA 4.0.

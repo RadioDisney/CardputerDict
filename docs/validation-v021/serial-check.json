@@ -1,0 +1,14 @@
+{
+  "status": "CardputerDict 0.2.1 board=14 heap=147720 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nlexicons en=770611 zh=0 ime=0\nnote=\nCMD_DONE",
+  "apple": "LOOKUP: apple\n/'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\r\nCMD_DONE",
+  "missing": "NOT_FOUND\r\nCMD_DONE",
+  "pinyin": "Loaded CC-CEDICT 汉英: 198650 headwords, 12416 sparse index bytes\nLoaded CC-CEDICT Pinyin IME: 85610 headwords, 5352 sparse index bytes\nCANDIDATES: 苹 平 乒 俜 凭 坪 娉 屏 枰 瓶 萍 评 鲆 冯 秤 砰 聘 堋\r\nCMD_DONE",
+  "passed": true,
+  "compact_single": "STATE direction=zh-en query= composition=ping page=0 candidate_page=0 visible=8 candidate_start=0\nCMD_DONE",
+  "compact_hidden": "STATE direction=zh-en query= composition=ping page=0 candidate_page=0 visible=8 candidate_start=0\nCMD_DONE",
+  "compact_eighth": "STATE direction=zh-en query=屏 composition= page=0 candidate_page=0 visible=0 candidate_start=0\nCMD_DONE",
+  "compact_page_two": "STATE direction=zh-en query= composition=ping page=0 candidate_page=1 visible=8 candidate_start=8\nCMD_DONE",
+  "compact_next": "STATE direction=zh-en query=枰 composition= page=0 candidate_page=0 visible=0 candidate_start=0\nCMD_DONE",
+  "compact_phrases": "STATE direction=zh-en query= composition=shishi page=0 candidate_page=0 visible=5 candidate_start=0\nCMD_DONE",
+  "compact_fifth": "STATE direction=zh-en query=时势 composition= page=0 candidate_page=0 visible=0 candidate_start=0\nCMD_DONE"
+}

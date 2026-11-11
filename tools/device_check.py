@@ -6,6 +6,7 @@ Requires pyserial and Pillow on the host. Does not flash or reset the device.
 import argparse
 import io
 import json
+import re
 import time
 from pathlib import Path
 
@@ -68,6 +69,7 @@ def main():
     parser.add_argument("--output", type=Path, default=Path("build/device"))
     parser.add_argument("--expected-words", type=int)
     parser.add_argument("--bilingual", action="store_true")
+    parser.add_argument("--compact", action="store_true")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     port = open_device(args.port, timeout=0.1)
@@ -77,10 +79,10 @@ def main():
         deadline = time.monotonic() + 120
         while time.monotonic() < deadline:
             status = command(port, "status")
-            if "CardputerDict 0.2.0" in status:
+            if "CardputerDict 0.2." in status:
                 status = command(port, "status")
                 break
-        if "CardputerDict 0.2.0" not in status:
+        if "CardputerDict 0.2." not in status:
             raise RuntimeError("Firmware not responding: " + status)
         if args.expected_words is not None and f"words={args.expected_words} " not in status:
             raise RuntimeError("Unexpected dictionary wordcount: " + status)
@@ -149,6 +151,48 @@ def main():
             command(port, "lookup apple")
             result.update(chinese=chinese.strip(), traditional=traditional.strip(), typed=typed.strip(), selected=selected.strip(), opened=opened.strip(),
                           hello=hello.strip(), deleted=deleted.strip(), umlaut=umlaut.strip(), switch_seconds=round(elapsed, 3), bilingual_status=final_status.strip())
+        if args.compact:
+            def candidate_words(response):
+                return next(line for line in response.splitlines() if line.startswith("CANDIDATES:")).split()[1:]
+
+            def value(response, name):
+                match = re.search(r"\b" + name + r"=(\d+)", response)
+                if not match:
+                    raise RuntimeError("Missing input state: " + response)
+                return int(match.group(1))
+
+            response = command(port, "ime ping")
+            single_words = candidate_words(response)
+            single_state = command(port, "press [")
+            if value(single_state, "visible") != 8 or value(single_state, "candidate_start") != 0:
+                raise RuntimeError("Single-character packing failed: " + single_state)
+            screenshot(port, args.output / "compact-single.png")
+            hidden = command(port, "press 9")
+            if "query= composition=ping " not in hidden:
+                raise RuntimeError("Invisible candidate was selected: " + hidden)
+            eighth = command(port, "press 8")
+            if "query=" + single_words[7] + " composition= " not in eighth:
+                raise RuntimeError("Eighth candidate mapping failed: " + eighth)
+            command(port, "ime ping")
+            second_state = command(port, "press ]")
+            if value(second_state, "candidate_start") != 8:
+                raise RuntimeError("Variable-page boundary failed: " + second_state)
+            screenshot(port, args.output / "compact-page-two.png")
+            next_selected = command(port, "press 1")
+            if "query=" + single_words[8] + " composition= " not in next_selected:
+                raise RuntimeError("Second-page candidate mapping failed: " + next_selected)
+            response = command(port, "ime shishi")
+            phrase_words = candidate_words(response)
+            phrase_state = command(port, "press [")
+            if value(phrase_state, "visible") != 5:
+                raise RuntimeError("Two-character packing failed: " + phrase_state)
+            screenshot(port, args.output / "compact-phrases.png")
+            fifth = command(port, "press 5")
+            if "query=" + phrase_words[4] + " composition= " not in fifth:
+                raise RuntimeError("Whole-phrase selection failed: " + fifth)
+            command(port, "lookup apple")
+            result.update(compact_single=single_state.strip(), compact_hidden=hidden.strip(), compact_eighth=eighth.strip(),
+                          compact_page_two=second_state.strip(), compact_next=next_selected.strip(), compact_phrases=phrase_state.strip(), compact_fifth=fifth.strip())
         (args.output / "serial-check.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(result, ensure_ascii=False, indent=2))
 

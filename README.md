@@ -1,8 +1,14 @@
-# CardputerDict 0.2
+# CardputerDict 0.2.7
 
 普通 M5Stack Cardputer 上的离线英汉 / 汉英词典，支持整词全拼和逐字中文输入。使用 PlatformIO、Arduino、M5Cardputer、M5GFX；无需联网或 PSRAM。
 
 屏幕保持 `setRotation(0)`，配合当前 M5GFX 的 Cardputer 面板偏移得到 **240×135 横屏**，画布读取实际屏幕尺寸。
+
+所有屏幕文字统一采用半角字符后 1 像素、全角/宽字符后 2 像素的额外字距；标题、输入框、词条列表、释义、候选、帮助、状态和进度提示共用同一渲染规则。换行、截断和候选分页同时计入这些间距。组合附加符号不额外拆开。
+
+释义正文行间留白为 4 像素；当前字体高度 14 像素，行步进 18 像素，每页显示 4 行。绘制位置、翻页边界和页码共用同一行数计算。
+
+备选词条列表的行步进由 15 增加到 17 像素。普通状态同屏显示 4 条，拼音输入时显示 2 条；上下选择自动滚动，全部匹配词条仍可选。
 
 ## 使用
 
@@ -19,7 +25,7 @@ Tab 会同时切换词库和输入方式，并清空当前查询。第一次进�
 |---|---|
 | Tab | 英汉英文输入 / 汉英拼音输入切换 |
 | 字母 | 输入英文或全拼 |
-| 空格、1–3 | 选择当前页候选词 |
+| 空格、1–9 | 选择当前页候选词 |
 | `[` / `]` | 拼音候选上一页 / 下一页 |
 | Enter | 查询选中的词条；拼音尚未选入时先选首项 |
 | Fn + `;` / Fn + `.` | 上下选择；释义页前后翻页 |
@@ -32,7 +38,7 @@ Tab 会同时切换词库和输入方式，并清空当前查询。第一次进�
 | Fn + D | 切换其他 SD 词库或内置演示 |
 | Fn + R | 重新挂载 SD，清空索引缓存并扫描词库 |
 
-候选每页 3 项，支持整词提交。较长候选会在屏幕上省略，选入后保留完整词语。内置逐字候选表覆盖 413 个音节、6,763 个 GB2312 汉字；缺少 SD 拼音索引时仍可逐字输入。
+候选保持单行和原字号，按实际字宽紧密排列，每页数量随词长变化；数字编号与当前页一一对应。240 像素屏幕上，通常可显示 8 个单字候选或 5 个双字词。支持整词提交。较长候选会在屏幕上省略，选入后保留完整词语。内置逐字候选表覆盖 413 个音节、6,763 个 GB2312 汉字；缺少 SD 拼音索引时仍可逐字输入。
 
 ## 数据
 
@@ -69,7 +75,7 @@ pio run -e cardputer -t upload --upload-port /dev/cu.usbmodemXXXX
 
 使用数据 USB 线。无法识别串口时，按住 G0 插入 USB 后松开。项目使用 8 MB Flash、6 MB 应用分区；不配置 OTA。
 
-合并固件 `CardputerDict-v0.2-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
+合并固件 `CardputerDict-v0.2.7-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
 
 原机完整 8 MB Flash 保存在 `backups/cardputer-before-20261110.bin`，恢复步骤见 `docs/RECOVERY.md`。
 
@@ -110,20 +116,20 @@ TSV 每行格式为 `词头<TAB>释义`，释义内用字面量 `\n` 表示换�
 
 ```sh
 sh tools/test.sh
-python3 tools/device_check.py /dev/cu.usbmodemXXXX --expected-words 770611 --bilingual --output build/device
+python3 tools/device_check.py /dev/cu.usbmodemXXXX --expected-words 770611 --bilingual --compact --output build/device
 ```
 
 主机测试使用 AddressSanitizer / UndefinedBehaviorSanitizer，验证真实词库、索引边界、中文 UTF-8、词组选择、多音字、拼音翻页和转换工具。设备测试使用与实体键盘相同的按键处理函数，验证输入到查词的完整流程，并导出实际屏幕缓冲区。完整实体键盘手感可按上表试用。
 
 串口诊断支持 `status`、`lookup apple`、`lookup 苹果`、`ime pingguo`、`type pingguo`、`press tab`、`press 1`、`press enter`、`screenshot`、`reload`。普通命令以 `CMD_DONE` 标记结束；二进制截图和文件传输有独立边界。
 
-最新记录见 `docs/BILINGUAL_REPORT.md`，原始验证日志见 `docs/validation-v020/`。
+备选词条列表行距更新见 `docs/WORD_LIST_SPACING.md` 和 `docs/validation-v027/`。行距与 TESLA 音标修复见 `docs/TESLA_AND_LINE_GAP.md` 和 `docs/validation-v026/`。历史释义行距更新见 `docs/DEFINITION_LINE_GAP.md` 和 `docs/validation-v025/`。全局字距更新见 `docs/GLOBAL_TYPOGRAPHY.md` 和 `docs/validation-v024/`。历史释义字距更新见 `docs/DEFINITION_SPACING.md` 和 `docs/validation-v023/`。单行紧凑候选更新见 `docs/COMPACT_CANDIDATES.md` 和 `docs/validation-v021/`；双向词典验证另见 `docs/BILINGUAL_REPORT.md`。
 
 ## 范围与许可
 
 支持整词全拼、逐字输入和短拼写前缀候选；不做整句自动分词、智能纠错或用户词频学习。查询使用词头定位，列表也可能显示排序相邻词。当前不读取 dict.dz、idx.gz、HTML、64 位偏移或 syn 别名索引，不支持发音和自动词形还原。单条释义最多读取 12 KB，超出时显示提示。
 
-正文使用 efontCN_14 和 DejaVu Sans 生成的 Latin / IPA 后备字库；生僻字及字库范围外符号可能缺字。SD 拼音候选限制为 GB2312 字符。
+正文使用 efontCN_14 和 DejaVu Sans 生成的 Latin / IPA / Cyrillic 后备字库（包括 TESLA 音标中的 ә）；生僻字及字库范围外符号可能缺字。SD 拼音候选限制为 GB2312 字符。
 
 - 应用代码及原创演示：MIT，见 LICENSE。
 - ECDICT：MIT，来源和许可见 third_party/ECDICT-LICENSE.txt、third_party/sources.json。
@@ -131,3 +137,5 @@ python3 tools/device_check.py /dev/cu.usbmodemXXXX --expected-words 770611 --bil
 - 逐字拼音：mozillazg/pinyin-data，MIT。
 - Latin / IPA 后备字形：DejaVu Sans 派生位图，许可和字体摘要见 third_party/DejaVuSans-LICENSE.txt、ipa-font-source.txt。
 - M5Stack 和 IRremote 库保留各自许可，见 third_party/。
+
+Unicode 字符宽度分类数据的来源和许可见 `third_party/Unicode-NOTICE.txt`、`Unicode-LICENSE.txt`；可用 `python3 tools/prepare_spacing_data.py` 重新生成。

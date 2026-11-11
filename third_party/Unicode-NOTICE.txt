@@ -1,0 +1,5 @@
+Character spacing classification is derived from Unicode 14.0.0 data exposed by Python unicodedata.
+Source: https://www.unicode.org/ucd/
+License: Unicode License V3, https://www.unicode.org/license.txt
+Generated files: include/unicode_spacing_data.h.
+Generator: tools/prepare_spacing_data.py.

@@ -16,7 +16,8 @@ def generate(source, root):
     unknown = font.getmask("\uffff")
     missing = (unknown.size, bytes(unknown))
     bitmaps, glyphs, codes = bytearray(), [], []
-    for code in range(0xA0, 0x400):
+    # ECDICT also uses Cyrillic schwa ә (U+04D9) in pronunciation fields.
+    for code in range(0xA0, 0x530):
         char = chr(code)
         mask = font.getmask(char)
         if (mask.size, bytes(mask)) == missing:

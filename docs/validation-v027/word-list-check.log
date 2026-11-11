@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "status": "CardputerDict 0.2.7 board=14 heap=147412 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\nnote=\nCMD_DONE",
+  "row_step": 17,
+  "previous_row_step": 15,
+  "added_pixels": 2,
+  "visible_rows": 4,
+  "visible_rows_while_composing": 2,
+  "words": [
+    "apple",
+    "apple aphid",
+    "apple blight",
+    "apple butter",
+    "apple canker"
+  ],
+  "scrolled_state": "STATE direction=en-zh query=apple composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=4 list_start=1 list_rows=4\nCMD_DONE",
+  "composition_state": "STATE direction=zh-en query=中 composition=guo page=0 candidate_page=0 visible=8 candidate_start=0 selected=3 list_start=2 list_rows=2\nCMD_DONE",
+  "pixel_rows_identical": true,
+  "composition_overlap": false
+}
