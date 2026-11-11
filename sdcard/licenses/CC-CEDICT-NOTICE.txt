@@ -1,0 +1,8 @@
+CC-CEDICT Chinese-English dictionary
+Published and maintained by MDBG and CC-CEDICT contributors.
+Original CEDICT: Copyright (C) 1997, 1998 Paul Andrew Denisowski.
+Source: https://www.mdbg.net/chinese/export/cedict/cedict_1_0_ts_utf-8_mdbg.txt.gz
+License: Creative Commons Attribution-ShareAlike 4.0 International
+https://creativecommons.org/licenses/by-sa/4.0/
+
+Adaptation by CardputerDict, 2026-11-10: merged simplified/traditional Chinese headwords into plain-text StarDict, generated a tone-free Pinyin-to-simplified-word index, filtered IME candidates to GB2312 and ranked common characters. These derived dictionary files (cedict.* and pinyin.*) are distributed under CC BY-SA 4.0. No endorsement by MDBG is implied. Application code is separately licensed MIT.

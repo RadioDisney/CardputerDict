@@ -8,3 +8,8 @@ python3 -m unittest discover -s tests -p 'test_*.py' -v
 if [ -f sdcard/dictionaries/ecdict.ifo ]; then
     build/tests/core_test sdcard/dictionaries/ecdict
 fi
+if [ -f sdcard/dictionaries/cedict.ifo ]; then
+    build/tests/core_test sdcard/dictionaries/cedict 苹果 apple
+    build/tests/core_test sdcard/dictionaries/cedict 蘋果 apple
+    build/tests/core_test sdcard/dictionaries/pinyin pingguo 苹果
+fi

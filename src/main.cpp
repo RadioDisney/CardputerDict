@@ -5,6 +5,7 @@
 #include "demo_data.h"
 #include "pinyin_data.h"
 #include "body_font.h"
+#include "ime_core.h"
 
 namespace {
 constexpr uint16_t BG = 0x0863, FG = 0xef7d, MUTED = 0x8c92;
@@ -21,15 +22,33 @@ public:
         return file && file.seek(offset) ? file.read(buffer, length) : 0;
     }
 };
-SdReader indexFile, bodyFile;
-dict::StarDict dictionary;
+struct SdLexicon {
+    SdReader indexFile, bodyFile;
+    dict::StarDict dictionary;
+    dict::Metadata meta;
+    std::string path;
+    bool loaded = false;
+    void reset() {
+        loaded = false;
+        indexFile.file.close(); bodyFile.file.close();
+        dictionary = dict::StarDict();
+        path.clear(); meta = {};
+    }
+};
+SdLexicon englishLexicon, chineseLexicon, otherLexicon, pinyinLexicon;
+SdLexicon* activeLexicon = nullptr;
+dict::StarDict& dictionary() { return activeLexicon->dictionary; }
 std::vector<std::string> dictionaryPaths;
 std::vector<dict::Entry> matches;
 std::vector<size_t> demoMatches;
-std::string query, composition, candidates, definition, headword;
+ime::State composer;
+std::string& composition = composer.input;
+std::vector<std::string>& candidates = composer.candidates;
+int& candidatePage = composer.page;
+std::string query, definition, headword;
 std::string sourceName = "内置演示", statusMessage;
 std::vector<std::string> lines;
-int selected = 0, definitionPage = 0, candidatePage = 0, activeDictionary = -1;
+int selected = 0, definitionPage = 0, activeDictionary = -1;
 bool sdMounted = false, usingSd = false, pinyin = false, dirty = true;
 bool keyWasDown[56] = {};
 bool searchPending = false;
@@ -38,6 +57,8 @@ enum class Page { Search, Definition, Help };
 Page page = Page::Search;
 
 M5GFX& screen() { return M5Cardputer.Display; }
+bool loadLexicon(SdLexicon& lexicon, const std::string& path);
+void switchDirection(bool chinese);
 
 void printAt(const std::string& text, int x, int y, uint16_t color = FG) {
     canvas.setTextColor(color);
@@ -73,18 +94,47 @@ void updateCandidates() {
     candidatePage = 0;
     candidates.clear();
     if (composition.empty()) return;
+    const std::string code = ime::normalize(composition);
+    if (code.empty()) return;
+    if (!pinyinLexicon.loaded && sdMounted && SD.exists("/dictionaries/pinyin.ifo"))
+        loadLexicon(pinyinLexicon, "/dictionaries/pinyin.ifo");
+    if (pinyinLexicon.loaded) {
+        const auto entries = pinyinLexicon.dictionary.suggest(code, 4);
+        const bool exact = !entries.empty() && entries[0].word == code;
+        for (const auto& entry : entries) {
+            if (!dict::startsWith(entry.word, code) || (exact && entry.word != code)) break;
+            bool truncated = false, ok = false;
+            const auto text = pinyinLexicon.dictionary.definition(entry, truncated, ok);
+            if (ok) ime::addLines(candidates, text, exact ? ime::kMaxCandidates : 3);
+        }
+    }
     size_t lo = 0, hi = kPinyinCount;
     while (lo < hi) {
         const size_t mid = lo + (hi - lo) / 2;
-        if (composition.compare(kPinyin[mid].code) > 0) lo = mid + 1; else hi = mid;
+        if (code.compare(kPinyin[mid].code) > 0) lo = mid + 1; else hi = mid;
     }
-    if (lo < kPinyinCount && composition == kPinyin[lo].code) candidates = kPinyin[lo].candidates;
+    if (lo < kPinyinCount && code == kPinyin[lo].code) {
+        const std::string chars = kPinyin[lo].candidates;
+        for (size_t pos = 0; pos < chars.size(); pos += dict::utf8Length(uint8_t(chars[pos])))
+            ime::addUnique(candidates, chars.substr(pos, dict::utf8Length(uint8_t(chars[pos]))));
+    }
+    if (!query.empty() && chineseLexicon.loaded) {
+        std::vector<std::string> completions;
+        for (const auto& entry : chineseLexicon.dictionary.suggest(query, 32)) {
+            if (!dict::startsWith(entry.word, query)) break;
+            completions.push_back(entry.word);
+        }
+        std::stable_partition(candidates.begin(), candidates.end(), [&](const std::string& candidate) {
+            return std::find(completions.begin(), completions.end(), query + candidate) != completions.end();
+        });
+    }
 }
 
 void refreshMatches() {
     selected = 0;
     matches.clear(); demoMatches.clear();
-    if (usingSd) matches = dictionary.suggest(query, kRows);
+    if (query.empty()) { searchPending = false; dirty = true; return; }
+    if (usingSd) matches = dictionary().suggest(query, kRows);
     else {
         for (size_t i = 0; i < kDemoCount && demoMatches.size() < kRows; ++i)
             if (dict::compare(kDemo[i].word, query) >= 0) demoMatches.push_back(i);
@@ -106,9 +156,9 @@ void clearQuery() {
     refreshMatches();
 }
 
-bool loadDictionary(const std::string& ifoPath) {
-    usingSd = false;
-    indexFile.file.close(); bodyFile.file.close();
+bool loadLexicon(SdLexicon& lexicon, const std::string& ifoPath) {
+    if (lexicon.loaded && lexicon.path == ifoPath) return true;
+    lexicon.reset();
     File ifo = SD.open(ifoPath.c_str(), FILE_READ);
     if (!ifo || ifo.size() > 16384) { statusMessage = "Cannot read .ifo"; return false; }
     std::string source;
@@ -118,12 +168,14 @@ bool loadDictionary(const std::string& ifoPath) {
     dict::Metadata meta;
     std::string error;
     if (!dict::parseMetadata(source, meta, error)) { statusMessage = error; return false; }
+    const size_t needed = ((meta.count + dict::kStride - 1) / dict::kStride) * sizeof(uint32_t) + 32768;
+    if (ESP.getFreeHeap() < needed) { statusMessage = "Not enough RAM for dictionary index"; return false; }
     const auto prefix = ifoPath.substr(0, ifoPath.size() - 4);
-    indexFile.file = SD.open((prefix + ".idx").c_str(), FILE_READ);
-    bodyFile.file = SD.open((prefix + ".dict").c_str(), FILE_READ);
-    if (!indexFile.file || !bodyFile.file) { statusMessage = "Need .idx and uncompressed .dict"; return false; }
+    lexicon.indexFile.file = SD.open((prefix + ".idx").c_str(), FILE_READ);
+    lexicon.bodyFile.file = SD.open((prefix + ".dict").c_str(), FILE_READ);
+    if (!lexicon.indexFile.file || !lexicon.bodyFile.file) { statusMessage = "Need .idx and uncompressed .dict"; lexicon.reset(); return false; }
     uint32_t lastDraw = 0;
-    if (!dictionary.open(indexFile, bodyFile, meta, error, [&](uint32_t done, uint32_t total) {
+    if (!lexicon.dictionary.open(lexicon.indexFile, lexicon.bodyFile, meta, error, [&](uint32_t done, uint32_t total) {
         delay(1);
         if (done == total || millis() - lastDraw >= 250) {
             paintProgress(done, total);
@@ -132,19 +184,46 @@ bool loadDictionary(const std::string& ifoPath) {
     })) {
         statusMessage = error;
         Serial.printf("Dictionary error: %s\n", error.c_str());
+        lexicon.reset();
         return false;
     }
-    sourceName = meta.name;
-    statusMessage.clear();
-    usingSd = true;
-    Serial.printf("Loaded %s: %lu headwords, %u sparse index bytes\n", sourceName.c_str(),
-                  (unsigned long)dictionary.count(), unsigned(dictionary.indexRamBytes()));
+    lexicon.path = ifoPath; lexicon.meta = meta; lexicon.loaded = true;
+    Serial.printf("Loaded %s: %lu headwords, %u sparse index bytes\n", meta.name.c_str(),
+                  (unsigned long)lexicon.dictionary.count(), unsigned(lexicon.dictionary.indexRamBytes()));
     return true;
+}
+
+bool loadDictionary(const std::string& path) {
+    SdLexicon* slot = path == "/dictionaries/ecdict.ifo" ? &englishLexicon :
+                      path == "/dictionaries/cedict.ifo" ? &chineseLexicon : &otherLexicon;
+    if (!loadLexicon(*slot, path)) return false;
+    activeLexicon = slot;
+    sourceName = slot->meta.name;
+    usingSd = true; statusMessage.clear();
+    const auto found = std::find(dictionaryPaths.begin(), dictionaryPaths.end(), path);
+    activeDictionary = found == dictionaryPaths.end() ? -1 : int(found - dictionaryPaths.begin());
+    return true;
+}
+
+void switchDirection(bool chinese) {
+    pinyin = chinese;
+    const std::string path = chinese ? "/dictionaries/cedict.ifo" : "/dictionaries/ecdict.ifo";
+    if (!sdMounted || !SD.exists(path.c_str()) || !loadDictionary(path)) {
+        usingSd = false; activeLexicon = nullptr; activeDictionary = -1; sourceName = "内置演示";
+        statusMessage = chinese ? "未安装 cedict 汉英词库" : "未安装 ecdict 英汉词库";
+    }
+    if (chinese && sdMounted && SD.exists("/dictionaries/pinyin.ifo")) {
+        if (!loadLexicon(pinyinLexicon, "/dictionaries/pinyin.ifo"))
+            Serial.printf("IME fallback: %s\n", statusMessage.c_str());
+    }
+    clearQuery();
 }
 
 void scanSd() {
     usingSd = false;
-    indexFile.file.close(); bodyFile.file.close();
+    activeLexicon = nullptr;
+    englishLexicon.reset(); chineseLexicon.reset(); otherLexicon.reset(); pinyinLexicon.reset();
+    pinyin = false;
     dictionaryPaths.clear(); activeDictionary = -1;
     if (sdMounted) SD.end();
     SPI.begin(40, 39, 14, 12);
@@ -152,7 +231,7 @@ void scanSd() {
     // Some cards need an extra initialization attempt after a USB warm reset.
     for (const uint32_t frequency : {10000000u, 4000000u, 1000000u}) {
         delay(100);
-        if (SD.begin(12, SPI, frequency) && SD.cardType() != CARD_NONE) {
+        if (SD.begin(12, SPI, frequency, "/sd", 16) && SD.cardType() != CARD_NONE) {
             sdMounted = true;
             break;
         }
@@ -168,7 +247,7 @@ void scanSd() {
                 if (!item.isDirectory() && name.size() > 4 && name.substr(name.size() - 4) == ".ifo") {
                     const auto slash = name.find_last_of('/');
                     const auto base = slash == std::string::npos ? name : name.substr(slash + 1);
-                    if (base.rfind("._", 0) != 0) dictionaryPaths.push_back("/dictionaries/" + base);
+                    if (base.rfind("._", 0) != 0 && base != "pinyin.ifo") dictionaryPaths.push_back("/dictionaries/" + base);
                 }
                 item.close();
                 if (dictionaryPaths.size() == 16) break;
@@ -180,7 +259,7 @@ void scanSd() {
         auto preferred = std::find(dictionaryPaths.begin(), dictionaryPaths.end(), "/dictionaries/ecdict.ifo");
         if (preferred != dictionaryPaths.end()) std::rotate(dictionaryPaths.begin(), preferred, preferred + 1);
         for (size_t i = 0; i < dictionaryPaths.size(); ++i) {
-            if (loadDictionary(dictionaryPaths[i])) { activeDictionary = int(i); break; }
+            if (loadDictionary(dictionaryPaths[i])) { pinyin = activeLexicon == &chineseLexicon; break; }
         }
         if (!usingSd) {
             sourceName = "内置演示";
@@ -195,12 +274,13 @@ void nextDictionary() {
     int next = activeDictionary + 1;
     if (next >= int(dictionaryPaths.size())) {
         usingSd = false; activeDictionary = -1; sourceName = "内置演示";
-        indexFile.file.close(); bodyFile.file.close(); statusMessage.clear();
+        activeLexicon = nullptr; statusMessage.clear(); pinyin = false;
     } else {
         activeDictionary = next;
         if (!loadDictionary(dictionaryPaths[next])) {
             usingSd = false; sourceName = "内置演示";
-        }
+        } else pinyin = activeLexicon == &chineseLexicon;
+        if (pinyin && SD.exists("/dictionaries/pinyin.ifo")) loadLexicon(pinyinLexicon, "/dictionaries/pinyin.ifo");
     }
     clearQuery();
 }
@@ -232,7 +312,7 @@ void openSelected() {
         const auto& entry = matches[selected];
         headword = entry.word;
         bool truncated = false, ok = false;
-        definition = dictionary.definition(entry, truncated, ok);
+        definition = dictionary().definition(entry, truncated, ok);
         if (!ok) definition = "读取失败。请检查 SD 卡，并按 Fn+R 重新加载。";
         if (truncated) definition += "\n[释义过长，已截断]";
     } else {
@@ -246,11 +326,7 @@ void openSelected() {
 }
 
 void chooseCandidate(int number) {
-    auto character = dict::utf8At(candidates, size_t(candidatePage * 5 + number));
-    if (character.empty() || query.size() + character.size() > 120) return;
-    query += character;
-    composition.clear(); candidates.clear(); candidatePage = 0;
-    scheduleSearch();
+    if (composer.select(number, query)) scheduleSearch();
 }
 
 void move(int amount) {
@@ -281,8 +357,7 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
         return;
     }
     if (x == 0 && y == 1) {
-        pinyin = !pinyin; composition.clear(); candidates.clear(); candidatePage = 0;
-        page = Page::Search; dirty = true; return;
+        switchDirection(!pinyin); return;
     }
     if (base == '`') {
         if (page != Page::Search) page = Page::Search;
@@ -309,16 +384,16 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
     if (page != Page::Search) { page = Page::Search; query.clear(); }
     const char c = state.shift ? key.value_second : base;
     if (pinyin && !composition.empty()) {
-        if (c >= '1' && c <= '5') { chooseCandidate(c - '1'); return; }
+        if (c >= '1' && c < '1' + ime::kPageSize) { chooseCandidate(c - '1'); return; }
+        if (c >= '0' && c <= '9') return;
         if (c == ' ') { chooseCandidate(0); return; }
         if (c == '[' || c == ']') {
-            const int last = std::max(0, int((dict::utf8Count(candidates) + 4) / 5) - 1);
-            candidatePage = std::max(0, std::min(last, candidatePage + (c == ']' ? 1 : -1)));
+            composer.turnPage(c == ']' ? 1 : -1);
             dirty = true; return;
         }
     }
-    if (pinyin && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))) {
-        if (composition.size() < 6) composition += char(dict::fold(uint8_t(c)));
+    if (pinyin && ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '\'')) {
+        composer.append(c);
         updateCandidates(); dirty = true;
     } else if (c >= 32 && c <= 126 && query.size() < 120) {
         query += c; scheduleSearch();
@@ -331,10 +406,10 @@ void render() {
     canvas.setFont(&fonts::efontCN_12);
     canvas.fillRect(0, 0, 240, 18, PANEL);
     printAt("CARDPUTER DICT", 5, 2, ACCENT);
-    printAt(pinyin ? "中文" : "EN", 205, 2, ACCENT);
+    printAt(pinyin ? "汉英" : "英汉", 205, 2, ACCENT);
     if (page == Page::Help) {
         canvas.setFont(&kBodyFont);
-        const char* help[] = {"Tab: 中英切换  Enter: 查词", "Fn+; / Fn+.: 选择或翻页", "拼音: 空格首选  1-5选字", "[ / ]: 候选翻页  v代表ü", "Fn+D: 切换词库  Fn+R: 重载", "Fn+退格: 清空  `: 返回"};
+        const char* help[] = {"Tab: 英汉/汉英  Enter:查词", "Fn+; / Fn+.: 选择或翻页", "全拼: 空格首选  1-3选词", "[ / ]: 候选翻页  v代表ü", "Fn+D: 切换词库  Fn+R: 重载", "Fn+退格: 清空  `: 返回"};
         for (size_t i = 0; i < 6; ++i) printAt(help[i], 4, 23 + int(i) * 16);
     } else if (page == Page::Definition) {
         canvas.setFont(&fonts::efontCN_16);
@@ -350,7 +425,7 @@ void render() {
         printAt(footer, 5, 121, MUTED);
     } else {
         canvas.setFont(&fonts::efontCN_16);
-        printAt(query.empty() ? "输入单词…" : fitTail(query, 214), 5, 21, query.empty() ? MUTED : FG);
+        printAt(query.empty() ? (pinyin ? "输入拼音…" : "输入单词…") : fitTail(query, 214), 5, 21, query.empty() ? MUTED : FG);
         canvas.drawFastHLine(4, 40, 232, SELECT);
         canvas.setFont(&kBodyFont);
         const size_t count = usingSd ? matches.size() : demoMatches.size();
@@ -363,21 +438,30 @@ void render() {
             canvas.setCursor(7, y);
             canvas.print(fitEnd(word, 222).c_str());
         }
-        if (count == 0) printAt("未找到；可换词库或缩短输入", 5, 45, MUTED);
+        if (query.empty()) {
+            printAt(pinyin ? "全拼输入，空格或1-3选词" : "输入英文后按Enter查询", 5, 45, MUTED);
+            if (pinyin) printAt("选词后按Enter查询释义", 5, 63, MUTED);
+        } else if (count == 0) printAt("未找到；可换词库或缩短输入", 5, 45, MUTED);
         if (!composition.empty()) {
             canvas.fillRect(0, 88, 240, 33, PANEL);
             canvas.setFont(&fonts::efontCN_12);
-            printAt("拼音 " + composition + "  " + std::to_string(candidatePage + 1), 4, 88, ACCENT);
+            const size_t pages = std::max(size_t(1), (candidates.size() + ime::kPageSize - 1) / ime::kPageSize);
+            printAt(fitTail(composition, 170), 4, 88, ACCENT);
+            printAt(std::to_string(candidatePage + 1) + "/" + std::to_string(pages), 196, 88, ACCENT);
             canvas.setFont(&fonts::efontCN_16);
-            std::string row;
-            for (int i = 0; i < 5; ++i) {
-                const auto c = dict::utf8At(candidates, candidatePage * 5 + i);
-                if (!c.empty()) row += std::to_string(i + 1) + c + " ";
+            for (int i = 0; i < ime::kPageSize; ++i) {
+                const size_t index = candidatePage * ime::kPageSize + i;
+                if (index >= candidates.size()) break;
+                const auto& word = candidates[index];
+                auto label = fitEnd(word, 56);
+                if (label != word) label = fitEnd(word, 40) + "…";
+                printAt(std::to_string(i + 1), 4 + i * 80, 102, ACCENT);
+                printAt(label, 16 + i * 80, 102);
             }
-            printAt(row.empty() ? "无候选，请检查拼音" : row, 4, 102);
+            if (candidates.empty()) printAt("无候选，请检查拼音", 4, 102);
         }
         canvas.setFont(&fonts::efontCN_12);
-        const std::string footer = usingSd ? "SD " + std::to_string(dictionary.count()) + "词  Fn+H帮助" : "演示 " + std::to_string(kDemoCount) + "词  Fn+H帮助";
+        const std::string footer = usingSd ? "SD " + std::to_string(dictionary().count()) + "词  Fn+H帮助" : "演示 " + std::to_string(kDemoCount) + "词  Fn+H帮助";
         printAt(footer, 4, 121, MUTED);
     }
     canvas.pushSprite(0, 0);
@@ -480,6 +564,25 @@ void receiveFile(const std::string& request) {
     dirty = true;
 }
 
+bool injectCharacter(char c) {
+    Keyboard_Class::KeysState state;
+    for (int y = 0; y < 4; ++y) for (int x = 0; x < 14; ++x) {
+        const auto key = M5Cardputer.Keyboard.getKeyValue({x, y});
+        if (key.value_first == c || key.value_second == c) {
+            state.shift = key.value_first != c;
+            handleKey(x, y, state);
+            return true;
+        }
+    }
+    return false;
+}
+
+void printInputState() {
+    Serial.printf("STATE direction=%s query=%s composition=%s page=%d candidate_page=%d\n",
+                  pinyin ? "zh-en" : "en-zh", query.c_str(), composition.c_str(), int(page), candidatePage);
+    if (page == Page::Definition) Serial.printf("TEXT: %s\n", definition.c_str());
+}
+
 void serialCommand() {
     static std::string command;
     static bool overflow = false;
@@ -490,9 +593,12 @@ void serialCommand() {
             if (overflow) Serial.println("ERR command too long");
             else if (command.rfind("put ", 0) == 0) receiveFile(command);
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.1.0 board=%d heap=%u sd=%d words=%lu source=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
-                              (unsigned long)(usingSd ? dictionary.count() : kDemoCount), sourceName.c_str());
+                Serial.printf("CardputerDict 0.2.0 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                              (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
+                Serial.printf("lexicons en=%lu zh=%lu ime=%lu\n", (unsigned long)(englishLexicon.loaded ? englishLexicon.dictionary.count() : 0),
+                              (unsigned long)(chineseLexicon.loaded ? chineseLexicon.dictionary.count() : 0),
+                              (unsigned long)(pinyinLexicon.loaded ? pinyinLexicon.dictionary.count() : 0));
                 Serial.printf("note=%s\n", statusMessage.c_str());
             } else if (command == "reload") scanSd();
             else if (command == "screenshot") {
@@ -504,18 +610,40 @@ void serialCommand() {
                     Serial.write(pixels, sizeof(pixels));
                 }
                 Serial.print("\nPPM_END\n");
-            } else if (command.rfind("ime ", 0) == 0 && command.size() <= 10) {
-                composition = command.substr(4); pinyin = true;
+            } else if (command.rfind("ime ", 0) == 0 && command.size() <= 4 + ime::kMaxComposition) {
+                switchDirection(true);
+                composition = command.substr(4);
                 page = Page::Search; updateCandidates(); dirty = true;
-                Serial.printf("CANDIDATES: %s\n", candidates.c_str());
+                Serial.print("CANDIDATES:");
+                for (const auto& word : candidates) { Serial.print(" "); Serial.print(word.c_str()); }
+                Serial.println();
+            } else if (command.rfind("type ", 0) == 0) {
+                for (char c : command.substr(5)) {
+                    if (uint8_t(c) < 32 || uint8_t(c) > 126 || !injectCharacter(c)) break;
+                }
+                printInputState();
+            } else if (command.rfind("press ", 0) == 0) {
+                const auto key = command.substr(6);
+                Keyboard_Class::KeysState state;
+                if (key == "tab") handleKey(0, 1, state);
+                else if (key == "enter") handleKey(13, 2, state);
+                else if (key == "backspace") handleKey(13, 0, state);
+                else if (key == "space") injectCharacter(' ');
+                else if (key == "clear") { state.fn = true; handleKey(13, 0, state); }
+                else if (key.size() == 1) injectCharacter(key[0]);
+                else Serial.println("ERR unknown key");
+                printInputState();
             }
             else if (command.rfind("lookup ", 0) == 0) {
-                query = command.substr(7); composition.clear(); candidates.clear();
+                const std::string word = command.substr(7);
+                switchDirection(ime::hasHan(word));
+                query = word;
                 refreshMatches();
                 const std::string first = usingSd ? (matches.empty() ? "" : matches[0].word) : (demoMatches.empty() ? "" : kDemo[demoMatches[0]].word);
                 if (dict::compare(first, query) != 0 || first.empty()) Serial.println("NOT_FOUND");
                 else { openSelected(); Serial.println(definition.c_str()); }
-            } else if (!command.empty()) Serial.println("Commands: status | lookup WORD | reload | ime PINYIN | screenshot");
+            } else if (!command.empty()) Serial.println("Commands: status | lookup WORD | reload | ime PINYIN | screenshot | type TEXT | press KEY");
+            if (command != "screenshot" && command.rfind("put ", 0) != 0) Serial.println("CMD_DONE");
             command.clear(); overflow = false;
         } else if (command.size() < 128) command += c;
         else overflow = true;

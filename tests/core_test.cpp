@@ -1,4 +1,5 @@
 #include "dict_core.h"
+#include "ime_core.h"
 #include <cassert>
 #include <fstream>
 #include <iostream>
@@ -36,6 +37,26 @@ void be32(std::vector<uint8_t>& bytes, uint32_t value) {
 }
 
 int main(int argc, char** argv) {
+    assert(ime::normalize("Xi'An") == "xian");
+    assert(ime::normalize("LU:E") == "lve");
+    assert(ime::normalize("ni3hao") == "");
+    assert(ime::hasHan("苹果") && ime::hasHan("蘋果") && !ime::hasHan("apple"));
+    ime::State composer;
+    for (char c : std::string("pingguo")) assert(composer.append(c));
+    ime::addLines(composer.candidates, "苹果\n平果\n苹果\n评估\n凭据");
+    assert(composer.candidates.size() == 4);
+    std::string committed;
+    assert(composer.select(0, committed));
+    assert(committed == "苹果" && composer.input.empty() && composer.candidates.empty());
+    dict::popUtf8(committed); assert(committed == "苹");
+    composer.input = "guo"; composer.candidates = {"国", "过", "果", "锅"};
+    composer.turnPage(1); assert(composer.page == 1);
+    assert(!composer.select(1, committed));
+    assert(composer.select(0, committed) && committed == "苹锅");
+    composer.input = "guo"; composer.candidates = {"果"};
+    assert(!composer.select(0, committed, committed.size()));
+    assert(composer.input == "guo" && composer.candidates[0] == "果");
+    composer.input.assign(ime::kMaxComposition, 'a'); assert(!composer.append('b'));
     assert(dict::compare("Apple", "apple") == 0);
     assert(dict::compare("a", "ab") < 0);
     assert(dict::indexCompare("APPLE", "apple") < 0);
@@ -103,17 +124,19 @@ int main(int argc, char** argv) {
     auto text = dictionary.definition(dictionary.suggest("x")[0], truncated, ok);
     assert(ok && truncated && text.size() == dict::kMaxDefinitionBytes - 1);
 
-    if (argc == 2) {
+    if (argc >= 2) {
         const std::string prefix = argv[1];
         std::ifstream info(prefix + ".ifo");
         std::string source((std::istreambuf_iterator<char>(info)), {});
         assert(dict::parseMetadata(source, meta, error));
         FileReader actualIndex(prefix + ".idx"), actualBody(prefix + ".dict");
         if (!dictionary.open(actualIndex, actualBody, meta, error)) { std::cerr << error << "\n"; return 1; }
-        auto result = dictionary.suggest("apple");
-        assert(!result.empty() && dict::compare(result[0].word, "apple") == 0);
+        const std::string lookup = argc > 2 ? argv[2] : "apple";
+        const std::string expected = argc > 3 ? argv[3] : "苹果";
+        auto result = dictionary.suggest(lookup);
+        assert(!result.empty() && dict::compare(result[0].word, lookup) == 0);
         const auto text = dictionary.definition(result[0], truncated, ok);
-        assert(ok && text.find("苹果") != std::string::npos);
+        assert(ok && text.find(expected) != std::string::npos);
         std::cout << "Validated real dictionary: " << meta.count << " headwords, " << dictionary.indexRamBytes() << " sparse index bytes\n";
     }
     std::cout << "Core tests passed: 10000 reference lookups, duplicate boundaries, malformed data, Chinese UTF-8.\n";

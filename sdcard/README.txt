@@ -1,10 +1,17 @@
-CardputerDict SD assets
+CardputerDict 0.2 SD assets
 
-Copy the dictionaries/ and licenses/ folders to the root of an existing FAT32 microSD card.
-Power off Cardputer before removing/inserting the card.
+Copy dictionaries/ and licenses/ to the root of a FAT32 microSD card.
 
-ECDICT: 770611 English headwords, Chinese definitions (no Chinese reverse index).
-Demo: 29 original English/Chinese headwords.
-Use Fn+D to switch dictionaries; Fn+R to reload.
+ECDICT: 770611 English headwords -> Chinese.
+CC-CEDICT: 198650 simplified/traditional headwords -> English.
+Pinyin: 85610 tone-free spellings -> simplified Chinese word candidates.
+Demo: 29 English/Chinese headwords.
 
-See the project README.md for controls, limitations, and licenses.
+Tab switches English-Chinese / Chinese-English and clears the input.
+Type pingguo, choose Apple/苹果 with Space or 1, then Enter to look it up.
+Candidates: 1-3; previous/next page: [ and ]; v for umlaut u.
+Fn+H: help. Fn+R: reload.
+
+Derived cedict.* and pinyin.* data: CC BY-SA 4.0.
+See licenses/CC-CEDICT-NOTICE.txt and licenses/CC-CEDICT-LICENSE.txt.
+Other data and application code retain their respective licenses.

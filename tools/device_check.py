@@ -28,11 +28,17 @@ def read_until_idle(port, timeout=4, idle=0.3):
     return bytes(result)
 
 
-def command(port, text):
+def command(port, text, timeout=120):
     port.reset_input_buffer()
     port.write((text + "\n").encode("utf-8"))
     port.flush()
-    return read_until_idle(port).decode("utf-8", errors="replace")
+    result = bytearray()
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        result.extend(port.read(port.in_waiting or 1))
+        if b"CMD_DONE\r\n" in result or b"CMD_DONE\n" in result:
+            return result.decode("utf-8", errors="replace")
+    raise TimeoutError("Command did not complete: " + text + " " + repr(result[-200:]))
 
 
 def screenshot(port, target):
@@ -61,6 +67,7 @@ def main():
     parser.add_argument("port")
     parser.add_argument("--output", type=Path, default=Path("build/device"))
     parser.add_argument("--expected-words", type=int)
+    parser.add_argument("--bilingual", action="store_true")
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     port = open_device(args.port, timeout=0.1)
@@ -70,10 +77,10 @@ def main():
         deadline = time.monotonic() + 120
         while time.monotonic() < deadline:
             status = command(port, "status")
-            if "CardputerDict 0.1.0" in status:
+            if "CardputerDict 0.2.0" in status:
                 status = command(port, "status")
                 break
-        if "CardputerDict 0.1.0" not in status:
+        if "CardputerDict 0.2.0" not in status:
             raise RuntimeError("Firmware not responding: " + status)
         if args.expected_words is not None and f"words={args.expected_words} " not in status:
             raise RuntimeError("Unexpected dictionary wordcount: " + status)
@@ -90,6 +97,58 @@ def main():
         screenshot(port, args.output / "pinyin.png")
         command(port, "lookup apple")
         result = {"status": status.strip(), "apple": apple.strip(), "missing": missing.strip(), "pinyin": pinyin.strip(), "passed": True}
+        if args.bilingual:
+            chinese = command(port, "lookup 苹果")
+            if "apple" not in chinese or "LOOKUP: 苹果" not in chinese:
+                raise RuntimeError("Chinese-English lookup failed: " + chinese)
+            screenshot(port, args.output / "chinese-definition.png")
+            traditional = command(port, "lookup 蘋果")
+            if "apple" not in traditional:
+                raise RuntimeError("Traditional lookup failed: " + traditional)
+            command(port, "lookup apple")
+            command(port, "press tab")
+            typed = command(port, "type pingguo")
+            if "composition=pingguo" not in typed or "direction=zh-en" not in typed:
+                raise RuntimeError("Typing full Pinyin failed: " + typed)
+            screenshot(port, args.output / "phrase-pinyin.png")
+            selected = command(port, "press 1")
+            if "query=苹果 composition= " not in selected:
+                raise RuntimeError("Whole-word selection failed: " + selected)
+            opened = command(port, "press enter")
+            if "LOOKUP: 苹果" not in opened or "apple" not in opened:
+                raise RuntimeError("IME-to-dictionary flow failed: " + opened)
+            command(port, "press clear")
+            command(port, "type ping")
+            paged = command(port, "press ]")
+            if "candidate_page=1" not in paged:
+                raise RuntimeError("Candidate pagination failed: " + paged)
+            screenshot(port, args.output / "candidate-page.png")
+            command(port, "press [")
+            command(port, "press clear")
+            command(port, "type nihao")
+            hello = command(port, "press space")
+            if "query=你好 composition= " not in hello:
+                raise RuntimeError("Phrase space selection failed: " + hello)
+            deleted = command(port, "press backspace")
+            if "query=你 composition= " not in deleted:
+                raise RuntimeError("UTF-8 backspace failed: " + deleted)
+            command(port, "press clear")
+            command(port, "type lve")
+            umlaut = command(port, "press 1")
+            if "query=略 composition= " not in umlaut and "query=掠 composition= " not in umlaut:
+                raise RuntimeError("v for umlaut failed: " + umlaut)
+            command(port, "lookup apple")
+            started = time.monotonic()
+            direction = command(port, "press tab")
+            elapsed = time.monotonic() - started
+            if "direction=zh-en" not in direction or "Loaded " in direction or elapsed > 2:
+                raise RuntimeError("Cached direction switch failed: " + direction)
+            final_status = command(port, "status")
+            if "words=198650 " not in final_status or "ime=85610" not in final_status or "display=240x135 rotation=0" not in final_status:
+                raise RuntimeError("Final bilingual state failed: " + final_status)
+            command(port, "lookup apple")
+            result.update(chinese=chinese.strip(), traditional=traditional.strip(), typed=typed.strip(), selected=selected.strip(), opened=opened.strip(),
+                          hello=hello.strip(), deleted=deleted.strip(), umlaut=umlaut.strip(), switch_seconds=round(elapsed, 3), bilingual_status=final_status.strip())
         (args.output / "serial-check.json").write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(json.dumps(result, ensure_ascii=False, indent=2))
 

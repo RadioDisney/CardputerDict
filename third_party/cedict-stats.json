@@ -1,0 +1,15 @@
+{
+  "source_entries": 125403,
+  "chinese_english": {
+    "words": 198650,
+    "index_bytes": 3403119,
+    "body_bytes": 11849016
+  },
+  "pinyin": {
+    "words": 85610,
+    "index_bytes": 1542564,
+    "body_bytes": 951773
+  },
+  "source_sha256": "4dae08102569239a0d2b95984df49a05e3191ebfa4206b1a66fbbeaa6db734e4",
+  "license": "CC BY-SA 4.0"
+}

@@ -1,0 +1,17 @@
+{
+  "status": "CardputerDict 0.2.0 board=14 heap=147752 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nlexicons en=770611 zh=0 ime=0\nnote=\nCMD_DONE",
+  "apple": "LOOKUP: apple\n/'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\r\nCMD_DONE",
+  "missing": "NOT_FOUND\r\nCMD_DONE",
+  "pinyin": "Loaded CC-CEDICT 汉英: 198650 headwords, 12416 sparse index bytes\nLoaded CC-CEDICT Pinyin IME: 85610 headwords, 5352 sparse index bytes\nCANDIDATES: 苹 平 乒 俜 凭 坪 娉 屏 枰 瓶 萍 评 鲆 冯 秤 砰 聘 堋\r\nCMD_DONE",
+  "passed": true,
+  "chinese": "LOOKUP: 苹果\n[Ping2 guo3]\nApple (American tech company)\n\n[ping2 guo3]\napple\nCL:個|个[ge4],顆|颗[ke1]\r\nCMD_DONE",
+  "traditional": "LOOKUP: 蘋果\n[Ping2 guo3]\nApple (American tech company)\n\n[ping2 guo3]\napple\nCL:個|个[ge4],顆|颗[ke1]\r\nCMD_DONE",
+  "typed": "STATE direction=zh-en query= composition=pingguo page=0 candidate_page=0\nCMD_DONE",
+  "selected": "STATE direction=zh-en query=苹果 composition= page=0 candidate_page=0\nCMD_DONE",
+  "opened": "LOOKUP: 苹果\nSTATE direction=zh-en query=苹果 composition= page=1 candidate_page=0\nTEXT: [Ping2 guo3]\nApple (American tech company)\n\n[ping2 guo3]\napple\nCL:個|个[ge4],顆|颗[ke1]\nCMD_DONE",
+  "hello": "STATE direction=zh-en query=你好 composition= page=0 candidate_page=0\nCMD_DONE",
+  "deleted": "STATE direction=zh-en query=你 composition= page=0 candidate_page=0\nCMD_DONE",
+  "umlaut": "STATE direction=zh-en query=掠 composition= page=0 candidate_page=0\nCMD_DONE",
+  "switch_seconds": 0.036,
+  "bilingual_status": "CardputerDict 0.2.0 board=14 heap=108192 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en\ndisplay=240x135 rotation=0\nlexicons en=770611 zh=198650 ime=85610\nnote=\nCMD_DONE"
+}

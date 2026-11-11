@@ -48,7 +48,7 @@ def main():
             try:
                 while True:
                     reply = line(port, timeout=3)
-                    if reply.startswith("CardputerDict 0.1.0"):
+                    if reply.startswith("CardputerDict "):
                         print(reply, flush=True)
                         while not line(port, timeout=3).startswith("note="):
                             pass
