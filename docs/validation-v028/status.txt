@@ -1,0 +1,10 @@
+Loaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes
+CardputerDict ready. Commands: status, lookup apple, reload
+CardputerDict 0.2.8 board=14 heap=147720 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh
+display=240x135 rotation=0
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=4 start=0 selected=0 count=5
+lexicons en=770611 zh=0 ime=0
+note=
+CMD_DONE

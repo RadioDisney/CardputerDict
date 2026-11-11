@@ -440,7 +440,11 @@ void render() {
     canvas.setFont(&fonts::efontCN_12);
     canvas.fillRect(0, 0, 240, 18, PANEL);
     printAt("CARDPUTER DICT", 5, 2, ACCENT);
-    printAt(pinyin ? "汉英" : "英汉", 205, 2, ACCENT);
+    const std::string direction = pinyin ? "汉英" : "英汉";
+    const std::string shortcut = "[Tab]";
+    const int directionX = canvas.width() - 5 - textWidth(direction);
+    printAt(shortcut, directionX - 5 - textWidth(shortcut), 2, MUTED);
+    printAt(direction, directionX, 2, ACCENT);
     if (page == Page::Help) {
         canvas.setFont(&kBodyFont);
         const char* help[] = {"Tab 切换  Enter 查词", "Fn+; / Fn+. 上下/翻页", "空格首选  1-9 选词", "[ / ] 翻候选  v=ü", "Fn+D 换词库  Fn+R 重载", "Fn+退格 清空  ` 返回"};
@@ -633,7 +637,7 @@ void serialCommand() {
             if (overflow) Serial.println("ERR command too long");
             else if (command.rfind("put ", 0) == 0) receiveFile(command);
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.2.7 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                Serial.printf("CardputerDict 0.2.8 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
                               (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
                 Serial.println("spacing half=1 full=2");
