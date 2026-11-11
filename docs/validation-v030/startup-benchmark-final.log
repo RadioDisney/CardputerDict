@@ -1,0 +1,41 @@
+CardputerDict 0.3.0 board=14 heap=143608 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh
+display=240x135 rotation=0
+boot_ready_ms=1308
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=4 start=0 selected=0 count=5
+lexicons en=770611 zh=0 ime=0
+cache path=/dictionaries/ecdict.ifo mode=cache load_ms=390 saved=0
+note=
+CMD_DONE
+
+CardputerDict 0.3.0 board=14 heap=107168 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en
+display=240x135 rotation=0
+boot_ready_ms=1308
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=2 start=0 selected=0 count=0
+lexicons en=770611 zh=198650 ime=85610
+cache path=/dictionaries/ecdict.ifo mode=cache load_ms=390 saved=0
+cache path=/dictionaries/cedict.ifo mode=scan load_ms=10133 saved=1
+cache path=/dictionaries/pinyin.ifo mode=scan load_ms=4775 saved=1
+note=
+CMD_DONE
+
+CardputerDict 0.3.0 board=14 heap=107148 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en
+display=240x135 rotation=0
+boot_ready_ms=1308
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=2 start=0 selected=0 count=0
+lexicons en=770611 zh=198650 ime=85610
+cache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0
+cache path=/dictionaries/cedict.ifo mode=cache load_ms=292 saved=0
+cache path=/dictionaries/pinyin.ifo mode=cache load_ms=284 saved=0
+note=
+CMD_DONE
+
+Cached boot 1: firmware=1321 ms, host=1337 ms
+Cached boot 2: firmware=1321 ms, host=1338 ms
+Cached boot 3: firmware=1321 ms, host=1337 ms
+Startup cache benchmark passed

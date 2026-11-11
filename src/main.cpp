@@ -34,8 +34,11 @@ struct SdLexicon {
     dict::Metadata meta;
     std::string path;
     bool loaded = false;
+    bool cacheHit = false, cacheSaved = false;
+    uint32_t loadMs = 0;
     void reset() {
         loaded = false;
+        cacheHit = cacheSaved = false; loadMs = 0;
         indexFile.file.close(); bodyFile.file.close();
         dictionary = dict::StarDict();
         path.clear(); meta = {};
@@ -59,11 +62,12 @@ bool sdMounted = false, usingSd = false, pinyin = false, dirty = true;
 bool keyWasDown[56] = {};
 bool searchPending = false;
 uint32_t searchAt = 0;
+uint32_t bootReadyMs = 0;
 enum class Page { Search, Definition, Help };
 Page page = Page::Search;
 
 M5GFX& screen() { return M5Cardputer.Display; }
-bool loadLexicon(SdLexicon& lexicon, const std::string& path);
+bool loadLexicon(SdLexicon& lexicon, const std::string& path, bool rebuild = false);
 void switchDirection(bool chinese);
 
 void printAt(const std::string& text, int x, int y, uint16_t color = FG) {
@@ -168,26 +172,76 @@ void clearQuery() {
     refreshMatches();
 }
 
-bool loadLexicon(SdLexicon& lexicon, const std::string& ifoPath) {
-    if (lexicon.loaded && lexicon.path == ifoPath) return true;
+bool readIndexCache(const std::string& path, std::vector<uint8_t>& data) {
+    File file = SD.open(path.c_str(), FILE_READ);
+    constexpr size_t maximum = dict::kCacheHeaderBytes + ((1000000 + dict::kStride - 1) / dict::kStride) * 4;
+    if (!file || file.size() < dict::kCacheHeaderBytes || file.size() > maximum) return false;
+    data.resize(file.size());
+    const bool ok = file.read(data.data(), data.size()) == data.size();
+    file.close();
+    return ok;
+}
+
+bool writeIndexCache(const std::string& path, const std::vector<uint8_t>& data) {
+    const std::string temporary = path + ".tmp";
+    // Only disposable derived cache files are replaced; source dictionaries stay intact.
+    if (SD.exists(temporary.c_str()) && !SD.remove(temporary.c_str())) return false;
+    File output = SD.open(temporary.c_str(), FILE_WRITE);
+    if (!output) return false;
+    const bool written = output.write(data.data(), data.size()) == data.size();
+    output.flush(); output.close();
+    if (!written) { SD.remove(temporary.c_str()); return false; }
+    File verify = SD.open(temporary.c_str(), FILE_READ);
+    bool ok = verify && verify.size() == data.size();
+    uint8_t bytes[1024];
+    for (size_t pos = 0; ok && pos < data.size(); pos += sizeof(bytes)) {
+        const size_t length = std::min(sizeof(bytes), data.size() - pos);
+        ok = verify.read(bytes, length) == length && memcmp(bytes, data.data() + pos, length) == 0;
+    }
+    verify.close();
+    if (!ok) { SD.remove(temporary.c_str()); return false; }
+    if (SD.exists(path.c_str()) && !SD.remove(path.c_str())) return false;
+    return SD.rename(temporary.c_str(), path.c_str());
+}
+
+bool loadLexicon(SdLexicon& lexicon, const std::string& ifoPath, bool rebuild) {
+    if (!rebuild && lexicon.loaded && lexicon.path == ifoPath) return true;
+    const uint32_t started = millis();
     lexicon.reset();
     File ifo = SD.open(ifoPath.c_str(), FILE_READ);
     if (!ifo || ifo.size() > 16384) { statusMessage = "Cannot read .ifo"; return false; }
     std::string source;
     source.reserve(ifo.size());
     while (ifo.available()) source.push_back(char(ifo.read()));
+    const uint32_t ifoModified = uint32_t(ifo.getLastWrite());
     ifo.close();
     dict::Metadata meta;
     std::string error;
     if (!dict::parseMetadata(source, meta, error)) { statusMessage = error; return false; }
-    const size_t needed = ((meta.count + dict::kStride - 1) / dict::kStride) * sizeof(uint32_t) + 32768;
+    // Restore/serialize temporarily holds both the byte representation and anchors.
+    const size_t needed = ((meta.count + dict::kStride - 1) / dict::kStride) * sizeof(uint32_t) * 2 + 32768;
     if (ESP.getFreeHeap() < needed) { statusMessage = "Not enough RAM for dictionary index"; return false; }
     const auto prefix = ifoPath.substr(0, ifoPath.size() - 4);
     lexicon.indexFile.file = SD.open((prefix + ".idx").c_str(), FILE_READ);
     lexicon.bodyFile.file = SD.open((prefix + ".dict").c_str(), FILE_READ);
     if (!lexicon.indexFile.file || !lexicon.bodyFile.file) { statusMessage = "Need .idx and uncompressed .dict"; lexicon.reset(); return false; }
+    dict::CacheIdentity identity;
+    identity.ifoCrc = ~dict::crc32(reinterpret_cast<const uint8_t*>(source.data()), source.size());
+    identity.ifoModified = ifoModified;
+    identity.indexModified = uint32_t(lexicon.indexFile.file.getLastWrite());
+    identity.bodyModified = uint32_t(lexicon.bodyFile.file.getLastWrite());
+    const bool identified = dict::sampleCrc(lexicon.indexFile, identity.indexSampleCrc) &&
+                            dict::sampleCrc(lexicon.bodyFile, identity.bodySampleCrc);
+    const std::string cachePath = prefix + ".cidx";
+    if (!rebuild && identified) {
+        std::vector<uint8_t> cached;
+        if (readIndexCache(cachePath, cached)) {
+            lexicon.cacheHit = lexicon.dictionary.restoreIndex(lexicon.indexFile, lexicon.bodyFile, meta, identity, cached, error);
+            if (!lexicon.cacheHit) Serial.printf("Index cache rejected %s: %s\n", ifoPath.c_str(), error.c_str());
+        }
+    }
     uint32_t lastDraw = 0;
-    if (!lexicon.dictionary.open(lexicon.indexFile, lexicon.bodyFile, meta, error, [&](uint32_t done, uint32_t total) {
+    if (!lexicon.cacheHit && !lexicon.dictionary.open(lexicon.indexFile, lexicon.bodyFile, meta, error, [&](uint32_t done, uint32_t total) {
         delay(1);
         if (done == total || millis() - lastDraw >= 250) {
             paintProgress(done, total);
@@ -199,16 +253,24 @@ bool loadLexicon(SdLexicon& lexicon, const std::string& ifoPath) {
         lexicon.reset();
         return false;
     }
+    if (!lexicon.cacheHit && identified) {
+        const auto serialized = lexicon.dictionary.serializeIndex(identity);
+        lexicon.cacheSaved = !serialized.empty() && writeIndexCache(cachePath, serialized);
+        if (!lexicon.cacheSaved) Serial.printf("Index cache save failed %s; dictionary usable\n", ifoPath.c_str());
+    }
     lexicon.path = ifoPath; lexicon.meta = meta; lexicon.loaded = true;
+    lexicon.loadMs = millis() - started;
+    Serial.printf("INDEX %s mode=%s ms=%lu bytes=%u saved=%d\n", ifoPath.c_str(), lexicon.cacheHit ? "cache" : "scan",
+                  (unsigned long)lexicon.loadMs, unsigned(dict::kCacheHeaderBytes + lexicon.dictionary.indexRamBytes()), lexicon.cacheSaved);
     Serial.printf("Loaded %s: %lu headwords, %u sparse index bytes\n", meta.name.c_str(),
                   (unsigned long)lexicon.dictionary.count(), unsigned(lexicon.dictionary.indexRamBytes()));
     return true;
 }
 
-bool loadDictionary(const std::string& path) {
+bool loadDictionary(const std::string& path, bool rebuild = false) {
     SdLexicon* slot = path == "/dictionaries/ecdict.ifo" ? &englishLexicon :
                       path == "/dictionaries/cedict.ifo" ? &chineseLexicon : &otherLexicon;
-    if (!loadLexicon(*slot, path)) return false;
+    if (!loadLexicon(*slot, path, rebuild)) return false;
     activeLexicon = slot;
     sourceName = slot->meta.name;
     usingSd = true; statusMessage.clear();
@@ -231,7 +293,7 @@ void switchDirection(bool chinese) {
     clearQuery();
 }
 
-void scanSd() {
+void scanSd(bool rebuild = false) {
     usingSd = false;
     activeLexicon = nullptr;
     englishLexicon.reset(); chineseLexicon.reset(); otherLexicon.reset(); pinyinLexicon.reset();
@@ -271,12 +333,16 @@ void scanSd() {
         auto preferred = std::find(dictionaryPaths.begin(), dictionaryPaths.end(), "/dictionaries/ecdict.ifo");
         if (preferred != dictionaryPaths.end()) std::rotate(dictionaryPaths.begin(), preferred, preferred + 1);
         for (size_t i = 0; i < dictionaryPaths.size(); ++i) {
-            if (loadDictionary(dictionaryPaths[i])) { pinyin = activeLexicon == &chineseLexicon; break; }
+            if (loadDictionary(dictionaryPaths[i], rebuild)) { pinyin = activeLexicon == &chineseLexicon; break; }
         }
         if (!usingSd) {
             sourceName = "内置演示";
             if (statusMessage.empty()) statusMessage = "SD 内未找到词库";
         }
+    }
+    if (rebuild && sdMounted) {
+        if (SD.exists("/dictionaries/cedict.ifo")) loadLexicon(chineseLexicon, "/dictionaries/cedict.ifo", true);
+        if (SD.exists("/dictionaries/pinyin.ifo")) loadLexicon(pinyinLexicon, "/dictionaries/pinyin.ifo", true);
     }
     clearQuery();
 }
@@ -381,7 +447,7 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
     const char base = key.value_first;
     if (state.fn) {
         if (base == 'h') { page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
-        else if (base == 'r') scanSd();
+        else if (base == 'r') scanSd(state.shift);
         else if (base == 'd') nextDictionary();
         else if (x == 13 && y == 0) clearQuery();
         else if (base == ';') move(-1);
@@ -534,7 +600,9 @@ void receiveFile(const std::string& request) {
     }
     const std::string target = "/dictionaries/" + base;
     const std::string partial = "/dictionaries/." + base + ".part";
-    uint8_t buffer[4096];
+    // Keep this out of serialCommand's stack frame when the compiler inlines
+    // receiveFile; normal commands can invoke nested index-cache/file routines.
+    static uint8_t buffer[4096];
     if (SD.exists(target.c_str())) {
         File existing = SD.open(target.c_str(), FILE_READ);
         uint32_t hash = 2166136261u;
@@ -603,7 +671,14 @@ void receiveFile(const std::string& request) {
     if (hash != uint32_t(expectedHash) || savedHash != hash || savedBytes != length) {
         SD.remove(partial.c_str()); Serial.println("ERR checksum mismatch");
     } else if (!SD.rename(partial.c_str(), target.c_str())) Serial.println("ERR rename failed; partial retained");
-    else Serial.println("DONE verified");
+    else {
+        // A new source file invalidates its derived cache even if FAT timestamps match.
+        if (base.substr(dot) == ".ifo" || base.substr(dot) == ".idx" || base.substr(dot) == ".dict") {
+            const std::string derived = "/dictionaries/" + base.substr(0, dot) + ".cidx";
+            if (SD.exists(derived.c_str())) SD.remove(derived.c_str());
+        }
+        Serial.println("DONE verified");
+    }
     dirty = true;
 }
 
@@ -637,17 +712,24 @@ void serialCommand() {
             if (overflow) Serial.println("ERR command too long");
             else if (command.rfind("put ", 0) == 0) receiveFile(command);
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.2.8 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                Serial.printf("CardputerDict 0.3.0 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
                               (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
+                Serial.printf("boot_ready_ms=%lu\n", (unsigned long)bootReadyMs);
                 Serial.println("spacing half=1 full=2");
                 Serial.printf("definition font_height=%d line_gap=%d line_step=%d rows=%d\n", bodyFontHeight(), kDefinitionLineGap, definitionLineStep(), definitionRows());
                 Serial.printf("results line_step=%d rows=%d start=%d selected=%d count=%u\n", kWordListLineStep, wordListRows(), wordListStart(), selected, unsigned(usingSd ? matches.size() : demoMatches.size()));
                 Serial.printf("lexicons en=%lu zh=%lu ime=%lu\n", (unsigned long)(englishLexicon.loaded ? englishLexicon.dictionary.count() : 0),
                               (unsigned long)(chineseLexicon.loaded ? chineseLexicon.dictionary.count() : 0),
                               (unsigned long)(pinyinLexicon.loaded ? pinyinLexicon.dictionary.count() : 0));
+                for (const auto* lexicon : {&englishLexicon, &chineseLexicon, &pinyinLexicon}) {
+                    if (lexicon->loaded) Serial.printf("cache path=%s mode=%s load_ms=%lu saved=%d\n", lexicon->path.c_str(), lexicon->cacheHit ? "cache" : "scan",
+                        (unsigned long)lexicon->loadMs, lexicon->cacheSaved);
+                }
                 Serial.printf("note=%s\n", statusMessage.c_str());
             } else if (command == "reload") scanSd();
+            else if (command == "reindex") scanSd(true);
+            else if (command == "restart") { Serial.println("RESTARTING"); Serial.flush(); delay(10); ESP.restart(); }
             else if (command == "screenshot") {
                 if (dirty) render();
                 Serial.print("PPM_BEGIN\nP6\n240 135\n255\n");
@@ -691,7 +773,7 @@ void serialCommand() {
                 const std::string first = usingSd ? (matches.empty() ? "" : matches[0].word) : (demoMatches.empty() ? "" : kDemo[demoMatches[0]].word);
                 if (dict::compare(first, query) != 0 || first.empty()) Serial.println("NOT_FOUND");
                 else { openSelected(); Serial.println(definition.c_str()); }
-            } else if (!command.empty()) Serial.println("Commands: status | lookup WORD | reload | ime PINYIN | screenshot | type TEXT | press KEY");
+            } else if (!command.empty()) Serial.println("Commands: status | lookup WORD | reload | reindex | ime PINYIN | screenshot | type TEXT | press KEY");
             if (command != "screenshot" && command.rfind("put ", 0) != 0) Serial.println("CMD_DONE");
             command.clear(); overflow = false;
         } else if (command.size() < 128) command += c;
@@ -725,6 +807,8 @@ void setup() {
     query = "apple";
     refreshMatches();
     render();
+    bootReadyMs = millis();
+    Serial.printf("BOOT_READY ms=%lu\n", (unsigned long)bootReadyMs);
     Serial.println("CardputerDict ready. Commands: status, lookup apple, reload");
 }
 

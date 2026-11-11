@@ -1,4 +1,4 @@
-# CardputerDict 0.2.7
+# CardputerDict 0.3.0
 
 普通 M5Stack Cardputer 上的离线英汉 / 汉英词典，支持整词全拼和逐字中文输入。使用 PlatformIO、Arduino、M5Cardputer、M5GFX；无需联网或 PSRAM。
 
@@ -19,7 +19,7 @@
 - **简繁体**：汉英词库包含简体和繁体词头；拼音默认输出简体。
 - **ü**：使用 `v`，例如 `lv`、`lve`。
 
-Tab 会同时切换词库和输入方式，并清空当前查询。第一次进入汉英模式会扫描汉英和拼音索引，等待进度条完成；此后英汉、汉英和拼音索引保留在内存，切换无需再次扫描。重启或 Fn+R 重载后会重新建立索引。
+Tab 会同时切换词库和输入方式，并清空当前查询。每套词库首次使用时扫描并校验索引，随后序列化保存到同名 `.cidx` 文件。后续开机、Tab 首次切换或 Fn+R 重载时直接读取缓存；同次开机中仍保留内存索引。缓存缺失、校验失败或词库检查不匹配时自动重新扫描。
 
 | 按键 | 操作 |
 |---|---|
@@ -36,7 +36,8 @@ Tab 会同时切换词库和输入方式，并清空当前查询。第一次进�
 | Fn + Backspace | 清空查询 |
 | Fn + H / G0 | 帮助 |
 | Fn + D | 切换其他 SD 词库或内置演示 |
-| Fn + R | 重新挂载 SD，清空索引缓存并扫描词库 |
+| Fn + R | 重新挂载 SD，从磁盘索引缓存快速加载 |
+| Fn + Shift + R | 完整重新校验启动词库、汉英与拼音，并重建 SD 索引缓存 |
 
 候选保持单行和原字号，按实际字宽紧密排列，每页数量随词长变化；数字编号与当前页一一对应。240 像素屏幕上，通常可显示 8 个单字候选或 5 个双字词。支持整词提交。较长候选会在屏幕上省略，选入后保留完整词语。内置逐字候选表覆盖 413 个音节、6,763 个 GB2312 汉字；缺少 SD 拼音索引时仍可逐字输入。
 
@@ -75,7 +76,7 @@ pio run -e cardputer -t upload --upload-port /dev/cu.usbmodemXXXX
 
 使用数据 USB 线。无法识别串口时，按住 G0 插入 USB 后松开。项目使用 8 MB Flash、6 MB 应用分区；不配置 OTA。
 
-合并固件 `CardputerDict-v0.2.7-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
+合并固件 `CardputerDict-v0.3.0-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
 
 原机完整 8 MB Flash 保存在 `backups/cardputer-before-20261110.bin`，恢复步骤见 `docs/RECOVERY.md`。
 
@@ -121,7 +122,7 @@ python3 tools/device_check.py /dev/cu.usbmodemXXXX --expected-words 770611 --bil
 
 主机测试使用 AddressSanitizer / UndefinedBehaviorSanitizer，验证真实词库、索引边界、中文 UTF-8、词组选择、多音字、拼音翻页和转换工具。设备测试使用与实体键盘相同的按键处理函数，验证输入到查词的完整流程，并导出实际屏幕缓冲区。完整实体键盘手感可按上表试用。
 
-串口诊断支持 `status`、`lookup apple`、`lookup 苹果`、`ime pingguo`、`type pingguo`、`press tab`、`press 1`、`press enter`、`screenshot`、`reload`。普通命令以 `CMD_DONE` 标记结束；二进制截图和文件传输有独立边界。
+串口诊断支持 `status`、`reindex`、`restart`、`lookup apple`、`lookup 苹果`、`ime pingguo`、`type pingguo`、`press tab`、`press 1`、`press enter`、`screenshot`、`reload`。普通命令以 `CMD_DONE` 标记结束；二进制截图和文件传输有独立边界。
 
 备选词条列表行距更新见 `docs/WORD_LIST_SPACING.md` 和 `docs/validation-v027/`。行距与 TESLA 音标修复见 `docs/TESLA_AND_LINE_GAP.md` 和 `docs/validation-v026/`。历史释义行距更新见 `docs/DEFINITION_LINE_GAP.md` 和 `docs/validation-v025/`。全局字距更新见 `docs/GLOBAL_TYPOGRAPHY.md` 和 `docs/validation-v024/`。历史释义字距更新见 `docs/DEFINITION_SPACING.md` 和 `docs/validation-v023/`。单行紧凑候选更新见 `docs/COMPACT_CANDIDATES.md` 和 `docs/validation-v021/`；双向词典验证另见 `docs/BILINGUAL_REPORT.md`。
 
@@ -139,3 +140,25 @@ python3 tools/device_check.py /dev/cu.usbmodemXXXX --expected-words 770611 --bil
 - M5Stack 和 IRremote 库保留各自许可，见 third_party/。
 
 Unicode 字符宽度分类数据的来源和许可见 `third_party/Unicode-NOTICE.txt`、`Unicode-LICENSE.txt`；可用 `python3 tools/prepare_spacing_data.py` 重新生成。
+
+## SD 索引缓存与快速启动（0.3.0）
+
+缓存保存的是原来内存中的稀疏锚点（每 64 词条一个 32 位偏移），不改变 StarDict 源文件。自动生成在同目录：`ecdict.cidx`、`cedict.cidx`、`pinyin.cidx`。它们是可重建的派生文件，无需手动拷贝；删除后只会触发下一次完整扫描。
+
+缓存由固定字节序的 64 字节头和锚点数组组成，包含格式版本、步长、词条数、源文件长度、修改时间、ifo 全文 CRC、索引/正文抽样 CRC，以及缓存头和锚点各自的 CRC32。加载时校验结构、单调偏移和少量锚点边界。
+
+首次扫描仍需等待，但只做一次；文件正常时，后续无需遍历数十 MB 的源索引。缓存先写临时文件并回读核对，再发布为 `.cidx`；中途断电、缓存文件截断或不可写都能回退为源索引扫描，缓存写入失败也不影响当前查词。
+
+源文件检查使用大小、修改时间和固定位置内容抽样，避免开机时重新计算整个大文件的哈希。**如果在外部原地修改词库，同时保留文件长度和修改时间，且改动未落在抽样区域内，不能保证自动发现。** 这种操作后按 Fn+Shift+R，或删除对应 cidx，完整重建一次；项目 USB 安装新词库时会主动清除对应缓存。
+
+串口 `reload` 使用缓存，`reindex` 强制重新校验启动词库/汉英/拼音，`restart` 重启。`status` 会显示各词库 cache/scan 加载方式、耗时、是否写入缓存及启动完成时间。
+
+缓存与重启基准测试：
+
+```sh
+python3 tools/benchmark_startup.py /dev/cu.usbmodemXXXX --output build/startup
+# 包含完整重新校验及三个软件重启：
+python3 tools/benchmark_startup.py /dev/cu.usbmodemXXXX --rebuild --output build/startup
+```
+
+验证记录见 `docs/INDEX_CACHE.md` 与 `docs/validation-v030/`。

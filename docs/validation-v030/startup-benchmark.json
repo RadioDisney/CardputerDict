@@ -1,0 +1,33 @@
+{
+  "initial_status": "CardputerDict 0.3.0 board=14 heap=143608 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1308\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=390 saved=0\nnote=\nCMD_DONE\r\n",
+  "first_ime": "INDEX /dictionaries/cedict.ifo mode=scan ms=10133 bytes=12480 saved=1\nLoaded CC-CEDICT 汉英: 198650 headwords, 12416 sparse index bytes\nINDEX /dictionaries/pinyin.ifo mode=scan ms=4775 bytes=5416 saved=1\nLoaded CC-CEDICT Pinyin IME: 85610 headwords, 5352 sparse index bytes\nCANDIDATES: 苹果 平果 平锅\r\nCMD_DONE\r\n",
+  "first_all_status": "CardputerDict 0.3.0 board=14 heap=107168 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en\ndisplay=240x135 rotation=0\nboot_ready_ms=1308\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=2 start=0 selected=0 count=0\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=390 saved=0\ncache path=/dictionaries/cedict.ifo mode=scan load_ms=10133 saved=1\ncache path=/dictionaries/pinyin.ifo mode=scan load_ms=4775 saved=1\nnote=\nCMD_DONE\r\n",
+  "reload_output": "INDEX /dictionaries/ecdict.ifo mode=cache ms=391 bytes=48228 saved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nCMD_DONE\r\n",
+  "reload_wall_ms": 648,
+  "cached_ime": "INDEX /dictionaries/cedict.ifo mode=cache ms=292 bytes=12480 saved=0\nLoaded CC-CEDICT 汉英: 198650 headwords, 12416 sparse index bytes\nINDEX /dictionaries/pinyin.ifo mode=cache ms=284 bytes=5416 saved=0\nLoaded CC-CEDICT Pinyin IME: 85610 headwords, 5352 sparse index bytes\nCANDIDATES: 苹果 平果 平锅\r\nCMD_DONE\r\n",
+  "cached_status": "CardputerDict 0.3.0 board=14 heap=107148 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en\ndisplay=240x135 rotation=0\nboot_ready_ms=1308\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=2 start=0 selected=0 count=0\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\ncache path=/dictionaries/cedict.ifo mode=cache load_ms=292 saved=0\ncache path=/dictionaries/pinyin.ifo mode=cache load_ms=284 saved=0\nnote=\nCMD_DONE\r\n",
+  "boots": [
+    {
+      "iteration": 1,
+      "firmware_ms": 1321,
+      "host_wall_ms": 1337,
+      "status": "CardputerDict 0.3.0 board=14 heap=143608 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1321\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nCMD_DONE\r\n",
+      "log": "RESTARTING\r\nESP-ROM:esp32s3-20210327\r\nBuild:Mar 27 2021\r\nrst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)\r\nSaved PC:0x4205b066\r\nSPIWP:0xee\r\nmode:DIO, clock div:1\r\nload:0x3fce3808,len:0x4bc\r\nload:0x403c9700,len:0xbd8\r\nload:0x403cc700,len:0x2a0c\r\nentry 0x403c98d0\r\nE (271) esp_core_dump_flash: No core dump partition found!\r\nE (271) esp_core_dump_flash: No core dump partition found!\r\nINDEX /dictionaries/ecdict.ifo mode=cache ms=391 bytes=48228 saved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nBOOT_READY ms=1321\nCardputerDict ready. Commands: status, lookup apple, reload\r\n"
+    },
+    {
+      "iteration": 2,
+      "firmware_ms": 1321,
+      "host_wall_ms": 1338,
+      "status": "CardputerDict 0.3.0 board=14 heap=143608 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1321\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=390 saved=0\nnote=\nCMD_DONE\r\n",
+      "log": "RESTARTING\r\nESP-ROM:esp32s3-20210327\r\nBuild:Mar 27 2021\r\nrst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)\r\nSaved PC:0x4205b066\r\nSPIWP:0xee\r\nmode:DIO, clock div:1\r\nload:0x3fce3808,len:0x4bc\r\nload:0x403c9700,len:0xbd8\r\nload:0x403cc700,len:0x2a0c\r\nentry 0x403c98d0\r\nE (271) esp_core_dump_flash: No core dump partition found!\r\nE (271) esp_core_dump_flash: No core dump partition found!\r\nINDEX /dictionaries/ecdict.ifo mode=cache ms=390 bytes=48228 saved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nBOOT_READY ms=1321\nCardputerDict ready. Commands: status, lookup apple, reload\r\n"
+    },
+    {
+      "iteration": 3,
+      "firmware_ms": 1321,
+      "host_wall_ms": 1337,
+      "status": "CardputerDict 0.3.0 board=14 heap=143608 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1321\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nCMD_DONE\r\n",
+      "log": "RESTARTING\r\nESP-ROM:esp32s3-20210327\r\nBuild:Mar 27 2021\r\nrst:0xc (RTC_SW_CPU_RST),boot:0x2b (SPI_FAST_FLASH_BOOT)\r\nSaved PC:0x4205b066\r\nSPIWP:0xee\r\nmode:DIO, clock div:1\r\nload:0x3fce3808,len:0x4bc\r\nload:0x403c9700,len:0xbd8\r\nload:0x403cc700,len:0x2a0c\r\nentry 0x403c98d0\r\nE (271) esp_core_dump_flash: No core dump partition found!\r\nE (271) esp_core_dump_flash: No core dump partition found!\r\nINDEX /dictionaries/ecdict.ifo mode=cache ms=391 bytes=48228 saved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nBOOT_READY ms=1321\nCardputerDict ready. Commands: status, lookup apple, reload\r\n"
+    }
+  ],
+  "passed": true
+}

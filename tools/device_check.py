@@ -79,10 +79,10 @@ def main():
         deadline = time.monotonic() + 120
         while time.monotonic() < deadline:
             status = command(port, "status")
-            if "CardputerDict 0.2." in status:
+            if "CardputerDict 0." in status:
                 status = command(port, "status")
                 break
-        if "CardputerDict 0.2." not in status:
+        if "CardputerDict 0." not in status:
             raise RuntimeError("Firmware not responding: " + status)
         if args.expected_words is not None and f"words={args.expected_words} " not in status:
             raise RuntimeError("Unexpected dictionary wordcount: " + status)

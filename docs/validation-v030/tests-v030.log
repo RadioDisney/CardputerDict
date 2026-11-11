@@ -1,0 +1,34 @@
+Real serialized dictionary validated: 29 headwords, 68 cache bytes
+Index cache tests passed: 10000 equivalent lookups, every-byte corruption, truncation, metadata changes, source changes and rebuild.
+Global typography passed: half/full widths, punctuation, combining marks, exact glyph positions, multiline and candidate pagination.
+Single-line candidate layout passed: dense packing, variable page sizes, numbering, UTF-8 and long-word selection.
+Validated real dictionary: 29 headwords, 4 sparse index bytes
+Core tests passed: 10000 reference lookups, duplicate boundaries, malformed data, Chinese UTF-8.
+test_invalid_line_is_not_silently_skipped (test_cedict.CedictTests.test_invalid_line_is_not_silently_skipped) ... ok
+test_normalization (test_cedict.CedictTests.test_normalization) ... ok
+test_polyphony_variants_and_phrase_candidates (test_cedict.CedictTests.test_polyphony_variants_and_phrase_candidates) ... ok
+test_existing_ipa_remains_available (test_ipa_font.PhoneticFontTests.test_existing_ipa_remains_available) ... ok
+test_generated_ranges_and_bitmap_bounds (test_ipa_font.PhoneticFontTests.test_generated_ranges_and_bitmap_bounds) ... ok
+test_tesla_cyrillic_schwa_is_visible (test_ipa_font.PhoneticFontTests.test_tesla_cyrillic_schwa_is_visible) ... ok
+test_ecdict_forms (test_tools.DictionaryToolsTest.test_ecdict_forms) ... ok
+test_reject_invalid (test_tools.DictionaryToolsTest.test_reject_invalid) ... ok
+test_stardict_order_offsets_unicode (test_tools.DictionaryToolsTest.test_stardict_order_offsets_unicode) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.008s
+
+OK
+Validated real dictionary: 770611 headwords, 48164 sparse index bytes
+Core tests passed: 10000 reference lookups, duplicate boundaries, malformed data, Chinese UTF-8.
+Real serialized dictionary validated: 770611 headwords, 48228 cache bytes
+Index cache tests passed: 10000 equivalent lookups, every-byte corruption, truncation, metadata changes, source changes and rebuild.
+Validated real dictionary: 198650 headwords, 12416 sparse index bytes
+Core tests passed: 10000 reference lookups, duplicate boundaries, malformed data, Chinese UTF-8.
+Validated real dictionary: 198650 headwords, 12416 sparse index bytes
+Core tests passed: 10000 reference lookups, duplicate boundaries, malformed data, Chinese UTF-8.
+Validated real dictionary: 85610 headwords, 5352 sparse index bytes
+Core tests passed: 10000 reference lookups, duplicate boundaries, malformed data, Chinese UTF-8.
+Real serialized dictionary validated: 198650 headwords, 12480 cache bytes
+Index cache tests passed: 10000 equivalent lookups, every-byte corruption, truncation, metadata changes, source changes and rebuild.
+Real serialized dictionary validated: 85610 headwords, 5416 cache bytes
+Index cache tests passed: 10000 equivalent lookups, every-byte corruption, truncation, metadata changes, source changes and rebuild.
