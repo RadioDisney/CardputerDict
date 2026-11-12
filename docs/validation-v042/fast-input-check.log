@@ -1,0 +1,19 @@
+{
+  "words": {
+    "hello": "STATE direction=en-zh query=hello composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "letterll": "STATE direction=en-zh query=letterll composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "bookkeeper": "STATE direction=en-zh query=bookkeeper composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "mississippi": "STATE direction=en-zh query=mississippi composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "eeeeeeee": "STATE direction=en-zh query=eeeeeeee composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  "initial": "CardputerDict 0.4.2 board=14 heap=95332 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1420\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=124537 max_interval_us=1000\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=390 saved=0\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=255 frames=0 peak=0 path= heap=95332\nCMD_DONE\r\n",
+  "held_backspace": {
+    "state": "STATE direction=en-zh query=abcdefghijklm composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "deleted_in_1200ms": 7,
+    "release_stopped": true
+  },
+  "single_backspace": "STATE direction=en-zh query=abcde composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+  "audio": "AUDIO state=idle word=apple wifi_configured=1 wifi_connected=0 volume=255 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=94676\nCMD_DONE\r\n",
+  "final": "CardputerDict 0.4.2 board=14 heap=94676 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1420\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=131139 max_interval_us=1231\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=390 saved=0\nnote=\nAUDIO state=idle word=apple wifi_configured=1 wifi_connected=0 volume=255 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=94676\nCMD_DONE\r\n",
+  "passed": true
+}

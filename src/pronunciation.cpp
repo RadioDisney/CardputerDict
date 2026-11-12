@@ -1,6 +1,7 @@
 #include "pronunciation.h"
 #include "audio_core.h"
 #include "pronunciation_ca.h"
+#include "keyboard_input.h"
 #include <M5Cardputer.h>
 #include <Preferences.h>
 #include <SD.h>
@@ -54,7 +55,7 @@ void fail(const std::string& message) {
     if (M5Cardputer.Speaker.isRunning()) { M5Cardputer.Speaker.stop(0); M5Cardputer.Speaker.end(); }
     closeSource();
     if (state == State::Connecting || state == State::Clock || state == State::Download) networkOff();
-    state = State::Idle; setNote(message);
+    state = State::Idle; keyboard::audioMode(false); setNote(message);
     Serial.printf("AUDIO error=%s\n", message.c_str());
 }
 
@@ -96,8 +97,9 @@ bool openAudio(const std::string& path) {
 }
 
 bool startPlayback(const std::string& path) {
-    if (!openAudio(path)) return false;
-    if (!M5Cardputer.Speaker.begin()) { closeSource(); return false; }
+    keyboard::audioMode(true);
+    if (!openAudio(path)) { keyboard::audioMode(false); return false; }
+    if (!M5Cardputer.Speaker.begin()) { closeSource(); keyboard::audioMode(false); return false; }
     M5Cardputer.Speaker.setVolume(loudness);
     state = State::Playing; playbackStarted = millis(); framesPlayed = peak = slot = 0;
     setNote("正在朗读 " + currentWord);
@@ -119,9 +121,8 @@ public:
         crc = dict::crc32(data, written, crc); count += written;
         if (written != length) failed = true;
         // Cancel during streaming without exposing credentials or touching UI state.
-        M5Cardputer.update();
-        const auto& keys = M5Cardputer.Keyboard.keysState();
-        if (M5Cardputer.Keyboard.isKeyPressed('`') || (keys.fn && M5Cardputer.Keyboard.isKeyPressed('p'))) {
+        M5.update();
+        if (keyboard::stopRequested()) {
             failed = downloadCancelled = true;
         }
         delay(1);
@@ -210,6 +211,7 @@ bool request(const std::string& value, bool sdReady, bool allowOnline) {
     }
     if (!allowOnline) { setNote("没有本地音频"); return false; }
     if (!configured()) { setNote("无本地音频，Fn+W 配置WiFi"); return false; }
+    keyboard::audioMode(true);
     if (prepareNetwork) prepareNetwork();
     WiFi.persistent(false); WiFi.setAutoReconnect(false); WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), password.c_str());
@@ -273,7 +275,7 @@ void tick() {
         framesPlayed += frames; slot = (slot + 1) % 3;
     } else if (state == State::Drain && !M5Cardputer.Speaker.isPlaying(0)) {
         M5Cardputer.Speaker.end();
-        closeSource(); state = State::Idle; setNote("朗读完成 " + currentWord);
+        closeSource(); state = State::Idle; keyboard::audioMode(false); setNote("朗读完成 " + currentWord);
         Serial.printf("AUDIO done word=%s frames=%llu peak=%lu\n", currentWord.c_str(), (unsigned long long)framesPlayed, (unsigned long)peak);
     }
 }
@@ -283,6 +285,7 @@ void stop() {
     closeSource();
     if (state != State::Idle) setNote("已停止朗读");
     state = State::Idle;
+    keyboard::audioMode(false);
 }
 bool busy() { return state != State::Idle; }
 bool downloading() { return state == State::Connecting || state == State::Clock || state == State::Download; }

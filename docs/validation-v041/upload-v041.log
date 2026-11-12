@@ -1,0 +1,299 @@
+Processing cardputer (platform: espressif32@6.12.0; board: m5stack-stamps3; framework: arduino)
+--------------------------------------------------------------------------------
+Verbose mode can be enabled via `-v, --verbose` option
+CONFIGURATION: https://docs.platformio.org/page/boards/espressif32/m5stack-stamps3.html
+PLATFORM: Espressif 32 (6.12.0) > M5Stack StampS3
+HARDWARE: ESP32S3 240MHz, 320KB RAM, 8MB Flash
+DEBUG: Current (cmsis-dap) External (cmsis-dap, esp-bridge, esp-builtin, esp-prog, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa)
+PACKAGES: 
+ - framework-arduinoespressif32 @ 3.20017.241212+sha.dcc1105b 
+ - tool-esptoolpy @ 2.40900.250804 (4.9.0) 
+ - tool-mkfatfs @ 2.0.1 
+ - tool-mklittlefs @ 1.203.210628 (2.3) 
+ - tool-mkspiffs @ 2.230.0 (2.30) 
+ - toolchain-riscv32-esp @ 8.4.0+2021r2-patch5 
+ - toolchain-xtensa-esp32s3 @ 8.4.0+2021r2-patch5
+LDF: Library Dependency Finder -> https://bit.ly/configure-pio-ldf
+LDF Modes: Finder ~ chain, Compatibility ~ soft
+Found 39 compatible libraries
+Scanning dependencies...
+Dependency Graph
+|-- M5GFX @ 0.3.0
+|-- M5Unified @ 0.3.0
+|-- M5Cardputer @ 1.1.1
+|-- IRremote @ 4.7.1
+|-- dr_mp3 @ 0.7.5
+|-- SD @ 2.0.0
+|-- SPI @ 2.0.0
+|-- HTTPClient @ 2.0.0
+|-- Preferences @ 2.0.0
+|-- WiFi @ 2.0.0
+|-- WiFiClientSecure @ 2.0.0
+Building in release mode
+Compiling .pio/build/cardputer/src/dr_mp3.cpp.o
+Compiling .pio/build/cardputer/src/main.cpp.o
+Compiling .pio/build/cardputer/src/pronunciation.cpp.o
+Building .pio/build/cardputer/bootloader.bin
+Generating partitions .pio/build/cardputer/partitions.bin
+esptool.py v4.9.0
+Creating esp32s3 image...
+Merged 1 ELF section
+Successfully created esp32s3 image.
+Compiling .pio/build/cardputer/libbeb/SPI/SPI.cpp.o
+Compiling .pio/build/cardputer/lib842/Wire/Wire.cpp.o
+Compiling .pio/build/cardputer/libf32/M5GFX/M5GFX.cpp.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/Fonts/IPA/lgfx_font_japan.c.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/Fonts/efont/lgfx_efont_cn.c.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/Fonts/efont/lgfx_efont_ja.c.o
+Archiving .pio/build/cardputer/libbeb/libSPI.a
+Indexing .pio/build/cardputer/libbeb/libSPI.a
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/Fonts/efont/lgfx_efont_kr.c.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/Fonts/efont/lgfx_efont_tw.c.o
+Archiving .pio/build/cardputer/lib842/libWire.a
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/utility/lgfx_miniz.c.o
+Indexing .pio/build/cardputer/lib842/libWire.a
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/utility/lgfx_pngle.c.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/utility/lgfx_qoi.c.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/utility/lgfx_qrcode.c.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/utility/lgfx_tjpgd.c.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/v1/LGFXBase.cpp.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/v1/lgfx_fonts.cpp.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/v1/lgfx_v1.cpp.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/v1/lgfx_v1_panel.cpp.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/v1/lgfx_v1_platforms.cpp.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/v1/lgfx_v1_touch.cpp.o
+Compiling .pio/build/cardputer/libf32/M5GFX/lgfx/v1/panel/Panel_M5HDMI.cpp.o
+Compiling .pio/build/cardputer/lib3bb/M5Unified/M5Unified.cpp.o
+Compiling .pio/build/cardputer/lib056/M5Cardputer/M5Cardputer.cpp.o
+Compiling .pio/build/cardputer/lib056/M5Cardputer/utility/Adafruit_TCA8418/Adafruit_TCA8418.cpp.o
+Compiling .pio/build/cardputer/lib056/M5Cardputer/utility/Keyboard/Keyboard.cpp.o
+Compiling .pio/build/cardputer/lib056/M5Cardputer/utility/Keyboard/KeyboardReader/IOMatrix.cpp.o
+Compiling .pio/build/cardputer/lib056/M5Cardputer/utility/Keyboard/KeyboardReader/TCA8418.cpp.o
+Compiling .pio/build/cardputer/lib7d0/FS/FS.cpp.o
+Compiling .pio/build/cardputer/lib7d0/FS/vfs_api.cpp.o
+Compiling .pio/build/cardputer/libbcb/SD/SD.cpp.o
+Compiling .pio/build/cardputer/libbcb/SD/sd_diskio.cpp.o
+Compiling .pio/build/cardputer/libbcb/SD/sd_diskio_crc.c.o
+Compiling .pio/build/cardputer/lib925/WiFi/WiFi.cpp.o
+Archiving .pio/build/cardputer/libf32/libM5GFX.a
+Compiling .pio/build/cardputer/lib925/WiFi/WiFiAP.cpp.o
+Compiling .pio/build/cardputer/lib925/WiFi/WiFiClient.cpp.o
+Compiling .pio/build/cardputer/lib925/WiFi/WiFiGeneric.cpp.o
+Indexing .pio/build/cardputer/libf32/libM5GFX.a
+Archiving .pio/build/cardputer/lib056/libM5Cardputer.a
+Indexing .pio/build/cardputer/lib056/libM5Cardputer.a
+Compiling .pio/build/cardputer/lib925/WiFi/WiFiMulti.cpp.o
+Archiving .pio/build/cardputer/lib7d0/libFS.a
+Archiving .pio/build/cardputer/libbcb/libSD.a
+Compiling .pio/build/cardputer/lib925/WiFi/WiFiSTA.cpp.o
+Indexing .pio/build/cardputer/lib7d0/libFS.a
+Indexing .pio/build/cardputer/libbcb/libSD.a
+Compiling .pio/build/cardputer/lib925/WiFi/WiFiScan.cpp.o
+Compiling .pio/build/cardputer/lib925/WiFi/WiFiServer.cpp.o
+Compiling .pio/build/cardputer/lib925/WiFi/WiFiUdp.cpp.o
+Compiling .pio/build/cardputer/lib2f5/WiFiClientSecure/WiFiClientSecure.cpp.o
+Compiling .pio/build/cardputer/lib2f5/WiFiClientSecure/esp_crt_bundle.c.o
+Compiling .pio/build/cardputer/lib2f5/WiFiClientSecure/ssl_client.cpp.o
+Compiling .pio/build/cardputer/lib253/HTTPClient/HTTPClient.cpp.o
+Compiling .pio/build/cardputer/lib2dd/Preferences/Preferences.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/Esp.cpp.o
+Archiving .pio/build/cardputer/lib925/libWiFi.a
+Compiling .pio/build/cardputer/FrameworkArduino/FirmwareMSC.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/FunctionalInterrupt.cpp.o
+Indexing .pio/build/cardputer/lib925/libWiFi.a
+Compiling .pio/build/cardputer/FrameworkArduino/HWCDC.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/HardwareSerial.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/IPAddress.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/IPv6Address.cpp.o
+Archiving .pio/build/cardputer/lib2f5/libWiFiClientSecure.a
+Compiling .pio/build/cardputer/FrameworkArduino/MD5Builder.cpp.o
+Indexing .pio/build/cardputer/lib2f5/libWiFiClientSecure.a
+Archiving .pio/build/cardputer/lib2dd/libPreferences.a
+Compiling .pio/build/cardputer/FrameworkArduino/Print.cpp.o
+Indexing .pio/build/cardputer/lib2dd/libPreferences.a
+Compiling .pio/build/cardputer/FrameworkArduino/Stream.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/StreamString.cpp.o
+Archiving .pio/build/cardputer/lib3bb/libM5Unified.a
+Indexing .pio/build/cardputer/lib3bb/libM5Unified.a
+Compiling .pio/build/cardputer/FrameworkArduino/Tone.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/USB.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/USBCDC.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/USBMSC.cpp.o
+Archiving .pio/build/cardputer/lib253/libHTTPClient.a
+Indexing .pio/build/cardputer/lib253/libHTTPClient.a
+Compiling .pio/build/cardputer/FrameworkArduino/WMath.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/WString.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/base64.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/cbuf.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-adc.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-bt.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-cpu.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-dac.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-gpio.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-i2c-slave.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-i2c.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-ledc.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-matrix.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-misc.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-psram.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-rgb-led.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-rmt.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-sigmadelta.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-spi.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-time.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-timer.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-tinyusb.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-touch.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/esp32-hal-uart.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/firmware_msc_fat.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/libb64/cdecode.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/libb64/cencode.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/main.cpp.o
+Compiling .pio/build/cardputer/FrameworkArduino/stdlib_noniso.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/wiring_pulse.c.o
+Compiling .pio/build/cardputer/FrameworkArduino/wiring_shift.c.o
+Archiving .pio/build/cardputer/libFrameworkArduino.a
+Indexing .pio/build/cardputer/libFrameworkArduino.a
+Linking .pio/build/cardputer/firmware.elf
+Retrieving maximum program size .pio/build/cardputer/firmware.elf
+Checking size .pio/build/cardputer/firmware.elf
+Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
+RAM:   [==        ]  20.2% (used 66044 bytes from 327680 bytes)
+Flash: [===       ]  32.9% (used 2071805 bytes from 6291456 bytes)
+Building .pio/build/cardputer/firmware.bin
+esptool.py v4.9.0
+Creating esp32s3 image...
+Merged 2 ELF sections
+Successfully created esp32s3 image.
+Configuring upload protocol...
+AVAILABLE: cmsis-dap, esp-bridge, esp-builtin, esp-prog, espota, esptool, iot-bus-jtag, jlink, minimodule, olimex-arm-usb-ocd, olimex-arm-usb-ocd-h, olimex-arm-usb-tiny-h, olimex-jtag-tiny, tumpa
+CURRENT: upload_protocol = esptool
+Looking for upload port...
+Using manually specified: /dev/cu.usbmodem414301
+Uploading .pio/build/cardputer/firmware.bin
+esptool.py v4.9.0
+Serial port /dev/cu.usbmodem414301
+Connecting...
+Chip is ESP32-S3 (QFN56) (revision v0.2)
+Features: WiFi, BLE, Embedded Flash 8MB (GD)
+Crystal is 40MHz
+USB mode: USB-Serial/JTAG
+MAC: c0:4e:30:13:12:70
+Uploading stub...
+Running stub...
+Stub running...
+Changing baud rate to 460800
+Changed.
+Configuring flash size...
+Flash will be erased from 0x00000000 to 0x00003fff...
+Flash will be erased from 0x00008000 to 0x00008fff...
+Flash will be erased from 0x0000e000 to 0x0000ffff...
+Flash will be erased from 0x00010000 to 0x00209fff...
+SHA digest in image updated
+Compressed 15104 bytes to 10430...
+Writing at 0x00000000... (100 %)
+Wrote 15104 bytes (10430 compressed) at 0x00000000 in 0.3 seconds (effective 467.0 kbit/s)...
+Hash of data verified.
+Compressed 3072 bytes to 119...
+Writing at 0x00008000... (100 %)
+Wrote 3072 bytes (119 compressed) at 0x00008000 in 0.0 seconds (effective 549.0 kbit/s)...
+Hash of data verified.
+Compressed 8192 bytes to 47...
+Writing at 0x0000e000... (100 %)
+Wrote 8192 bytes (47 compressed) at 0x0000e000 in 0.1 seconds (effective 749.6 kbit/s)...
+Hash of data verified.
+Compressed 2072176 bytes to 1440079...
+Writing at 0x00010000... (1 %)
+Writing at 0x0001859d... (2 %)
+Writing at 0x0001e497... (3 %)
+Writing at 0x00023d08... (4 %)
+Writing at 0x00029538... (5 %)
+Writing at 0x0002e95b... (6 %)
+Writing at 0x00033cc7... (7 %)
+Writing at 0x00038ee9... (9 %)
+Writing at 0x0003e284... (10 %)
+Writing at 0x0004370d... (11 %)
+Writing at 0x00048a13... (12 %)
+Writing at 0x0004d95a... (13 %)
+Writing at 0x0005296e... (14 %)
+Writing at 0x00057b65... (15 %)
+Writing at 0x0005d1ac... (17 %)
+Writing at 0x000622b2... (18 %)
+Writing at 0x0006744a... (19 %)
+Writing at 0x0006c92e... (20 %)
+Writing at 0x000719ca... (21 %)
+Writing at 0x00076a42... (22 %)
+Writing at 0x0007bf69... (23 %)
+Writing at 0x00081346... (25 %)
+Writing at 0x000868d2... (26 %)
+Writing at 0x0008bdc7... (27 %)
+Writing at 0x000913a4... (28 %)
+Writing at 0x0009665d... (29 %)
+Writing at 0x0009b91a... (30 %)
+Writing at 0x000a0f1d... (31 %)
+Writing at 0x000a636e... (32 %)
+Writing at 0x000ab490... (34 %)
+Writing at 0x000b084f... (35 %)
+Writing at 0x000b58f4... (36 %)
+Writing at 0x000babbd... (37 %)
+Writing at 0x000bff38... (38 %)
+Writing at 0x000c5410... (39 %)
+Writing at 0x000ca7f0... (40 %)
+Writing at 0x000cf7c4... (42 %)
+Writing at 0x000d4a57... (43 %)
+Writing at 0x000d9fca... (44 %)
+Writing at 0x000df148... (45 %)
+Writing at 0x000e44d1... (46 %)
+Writing at 0x000e99aa... (47 %)
+Writing at 0x000f4135... (48 %)
+Writing at 0x000ff4a1... (50 %)
+Writing at 0x00109d6c... (51 %)
+Writing at 0x0011b05a... (52 %)
+Writing at 0x00123f2e... (53 %)
+Writing at 0x00128e48... (54 %)
+Writing at 0x0012e698... (55 %)
+Writing at 0x00133e41... (56 %)
+Writing at 0x001396db... (57 %)
+Writing at 0x0013ed80... (59 %)
+Writing at 0x00143f1a... (60 %)
+Writing at 0x00149569... (61 %)
+Writing at 0x0014f386... (62 %)
+Writing at 0x00154baa... (63 %)
+Writing at 0x0015a1f6... (64 %)
+Writing at 0x0015fd89... (65 %)
+Writing at 0x001654a7... (67 %)
+Writing at 0x0016a4d5... (68 %)
+Writing at 0x0016f39c... (69 %)
+Writing at 0x00174392... (70 %)
+Writing at 0x0017931d... (71 %)
+Writing at 0x0017e165... (72 %)
+Writing at 0x00183512... (73 %)
+Writing at 0x0018849d... (75 %)
+Writing at 0x0018d336... (76 %)
+Writing at 0x00192315... (77 %)
+Writing at 0x00197f5f... (78 %)
+Writing at 0x0019d2f2... (79 %)
+Writing at 0x001a24d5... (80 %)
+Writing at 0x001a753a... (81 %)
+Writing at 0x001ac448... (82 %)
+Writing at 0x001b152d... (84 %)
+Writing at 0x001b66aa... (85 %)
+Writing at 0x001bbc19... (86 %)
+Writing at 0x001c0ee2... (87 %)
+Writing at 0x001c6dbb... (88 %)
+Writing at 0x001cc3d3... (89 %)
+Writing at 0x001d155e... (90 %)
+Writing at 0x001d6df9... (92 %)
+Writing at 0x001dceb5... (93 %)
+Writing at 0x001e4ded... (94 %)
+Writing at 0x001ed83f... (95 %)
+Writing at 0x001f3e37... (96 %)
+Writing at 0x001f9772... (97 %)
+Writing at 0x001feed9... (98 %)
+Writing at 0x00204729... (100 %)
+Wrote 2072176 bytes (1440079 compressed) at 0x00010000 in 13.8 seconds (effective 1202.0 kbit/s)...
+Hash of data verified.
+
+Leaving...
+Hard resetting via RTS pin...
+========================= [SUCCESS] Took 30.72 seconds =========================

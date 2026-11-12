@@ -1,4 +1,4 @@
-# CardputerDict 0.4.0
+# CardputerDict 0.4.2
 
 普通 M5Stack Cardputer 上的离线英汉 / 汉英词典，支持整词全拼和逐字中文输入。使用 PlatformIO、Arduino、M5Cardputer、M5GFX；无需联网或 PSRAM。
 
@@ -77,6 +77,10 @@ python3 tools/check_pronunciation.py /dev/cu.usbmodemXXXX --online-word pronunci
 
 验证记录见 `docs/PRONUNCIATION.md` 和 `docs/validation-v040/`。
 
+退格支持按住连续删除：首次按下立即删除一次，约 450ms 后开始每 125ms 重复，松手停止。适用于查询、拼音和 WiFi 输入框；中文按完整 UTF-8 字符删除。Fn+退格保持单次清空，其他修饰键组合不自动重复。
+
+键盘采用独立 1ms 扫描任务，按键变化经 2ms 去抖后入队；界面刷新和查词期间也持续捕获松手/重按，同键快速连按无需等待界面刷新结束。长按退格时延后匹配词条刷新，松手后自动更新。
+
 ## 使用
 
 - **英汉**：输入 `apple`，按 Enter 查看中文释义。
@@ -146,7 +150,7 @@ pio run -e cardputer -t upload --upload-port /dev/cu.usbmodemXXXX
 
 使用数据 USB 线。无法识别串口时，按住 G0 插入 USB 后松开。项目使用 8 MB Flash、6 MB 应用分区；不配置 OTA。
 
-合并固件 `CardputerDict-v0.4.0-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
+合并固件 `CardputerDict-v0.4.2-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
 
 原机完整 8 MB Flash 保存在 `backups/cardputer-before-20261110.bin`，恢复步骤见 `docs/RECOVERY.md`。
 

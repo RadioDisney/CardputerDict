@@ -8,6 +8,8 @@
 #include "ime_core.h"
 #include "ui_text.h"
 #include "pronunciation.h"
+#include "key_repeat.h"
+#include "keyboard_input.h"
 #include <esp_heap_caps.h>
 
 namespace {
@@ -61,7 +63,7 @@ std::string sourceName = "内置演示", statusMessage;
 std::vector<std::string> lines;
 int selected = 0, definitionPage = 0, activeDictionary = -1;
 bool sdMounted = false, usingSd = false, pinyin = false, dirty = true;
-bool keyWasDown[56] = {};
+KeyRepeat backspaceRepeat;
 bool searchPending = false;
 uint32_t searchAt = 0;
 uint32_t bootReadyMs = 0;
@@ -573,6 +575,29 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
     }
 }
 
+Keyboard_Class::KeysState keyState(uint64_t held) {
+    Keyboard_Class::KeysState result;
+    const uint8_t flags = keyboard::modifiers(held);
+    result.fn = flags & keyboard::kFn; result.shift = flags & keyboard::kShift;
+    result.ctrl = flags & keyboard::kCtrl; result.opt = flags & keyboard::kOpt; result.alt = flags & keyboard::kAlt;
+    return result;
+}
+
+void handleKeyEvent(const keyboard::Event& event) {
+    auto state = keyState(event.held);
+    const bool backspace = event.key == 13;
+    const bool plain = !state.fn && !state.ctrl && !state.alt && !state.opt;
+    const bool heldBackspace = event.held & keyboard::keyBit(13, 0);
+    if (!plain || event.audio || pronunciation::busy()) backspaceRepeat.update(millis(), heldBackspace, false);
+    if (backspace && !event.pressed) { backspaceRepeat.update(millis(), false); return; }
+    // Do not replay typing captured while a sound/network operation blocked it.
+    if (event.audio && !pronunciation::busy()) return;
+    if (!event.pressed) return;
+    if (backspace && plain) {
+        if (backspaceRepeat.update(millis(), true, !pronunciation::busy())) handleKey(13, 0, state);
+    } else handleKey(event.key % 14, event.key / 14, state);
+}
+
 void render() {
     canvas.fillSprite(BG);
     canvas.setTextWrap(false);
@@ -814,10 +839,11 @@ void serialCommand() {
                 Serial.println("ERR audio busy; use audio stop");
             else if (command.rfind("put ", 0) == 0 || command.rfind("putaudio ", 0) == 0) receiveFile(command);
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.4.0 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                Serial.printf("CardputerDict 0.4.2 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
                               (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
                 Serial.printf("boot_ready_ms=%lu\n", (unsigned long)bootReadyMs);
+                keyboard::diagnostics();
                 Serial.println("spacing half=1 full=2");
                 Serial.printf("definition font_height=%d line_gap=%d line_step=%d rows=%d\n", bodyFontHeight(), kDefinitionLineGap, definitionLineStep(), definitionRows());
                 Serial.printf("results line_step=%d rows=%d start=%d selected=%d count=%u\n", kWordListLineStep, wordListRows(), wordListStart(), selected, unsigned(usingSd ? matches.size() : demoMatches.size()));
@@ -860,6 +886,25 @@ void serialCommand() {
                 for (char c : command.substr(5)) {
                     if (uint8_t(c) < 32 || uint8_t(c) > 126 || !injectCharacter(c)) break;
                 }
+                printInputState();
+            } else if (command.rfind("keytest ", 0) == 0) {
+                const auto text = command.substr(8);
+                uint8_t keys[32]; size_t count = 0;
+                for (const auto c : text) {
+                    bool found = false;
+                    for (int y = 0; y < 4 && !found; ++y) for (int x = 0; x < 14 && !found; ++x) {
+                        if (M5Cardputer.Keyboard.getKeyValue({x, y}).value_first == c && count < sizeof(keys)) {
+                            keys[count++] = uint8_t(y * 14 + x); found = true;
+                        }
+                    }
+                    if (!found) { count = 0; break; }
+                }
+                if (page != Page::Search || composition.size() || !count || !keyboard::injectTaps(keys, count)) Serial.println("ERR keytest needs a search input and 1..32 supported characters");
+                else Serial.println("KEYTEST held_ms=8 gap_ms=4");
+            } else if (command == "keytest-hold-backspace") {
+                const uint8_t key = 13;
+                Serial.println(page == Page::Search && keyboard::injectTaps(&key, 1, 1200, 4) ? "KEYTEST backspace held_ms=1200" : "ERR keytest busy");
+            } else if (command == "input state") {
                 printInputState();
             } else if (command.rfind("press ", 0) == 0) {
                 const auto key = command.substr(6);
@@ -922,6 +967,11 @@ void setup() {
     query = "apple";
     refreshMatches();
     render();
+    if (!keyboard::begin()) {
+        screen().fillScreen(BG); screen().setFont(&kBodyFont); screen().setTextColor(FG);
+        printScreenAt("Keyboard startup failed", 5, 30);
+        spriteReady = false; return;
+    }
     bootReadyMs = millis();
     Serial.printf("BOOT_READY ms=%lu\n", (unsigned long)bootReadyMs);
     Serial.println("CardputerDict ready. Commands: status, lookup apple, reload");
@@ -929,23 +979,22 @@ void setup() {
 
 void loop() {
     if (!spriteReady) { delay(100); return; }
-    M5Cardputer.update();
-    const auto& state = M5Cardputer.Keyboard.keysState();
-    bool down[56] = {};
-    for (const auto& point : M5Cardputer.Keyboard.keyList()) {
-        if (point.x < 0 || point.x >= 14 || point.y < 0 || point.y >= 4) continue;
-        const int i = point.y * 14 + point.x;
-        down[i] = true;
-        if (!keyWasDown[i]) handleKey(point.x, point.y, state);
-    }
-    memcpy(keyWasDown, down, sizeof(down));
+    M5.update();
+    keyboard::Event event;
+    for (int count = 0; count < 96 && keyboard::next(event); ++count) handleKeyEvent(event);
+    const uint64_t held = keyboard::heldKeys();
+    const auto state = keyState(held);
+    const bool allowBackspace = !state.fn && !state.ctrl && !state.alt && !state.opt && !pronunciation::busy();
+    if (backspaceRepeat.update(millis(), held & keyboard::keyBit(13, 0), allowBackspace)) handleKey(13, 0, state);
     pronunciation::tick();
     restoreAfterAudioNetwork();
     if (pronunciation::changed()) { audioNoticeUntil = millis() + 2500; dirty = true; }
     if (audioNoticeUntil && int32_t(millis() - audioNoticeUntil) >= 0) { audioNoticeUntil = 0; dirty = true; }
-    if (searchPending && int32_t(millis() - searchAt) >= 0) refreshMatches();
+    // Repeated deletion must not wait for an SD lookup between every repeat.
+    // Keep the input responsive, then refresh matches after physical release.
+    if (searchPending && !(keyboard::heldKeys() & keyboard::keyBit(13, 0)) && int32_t(millis() - searchAt) >= 0) refreshMatches();
     if (M5Cardputer.BtnA.wasPressed() && !pronunciation::busy() && page != Page::Wifi) { page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
     serialCommand();
     if (dirty) render();
-    delay(5);
+    delay(1);
 }
