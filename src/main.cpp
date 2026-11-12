@@ -375,6 +375,10 @@ int definitionRows() {
     return std::max(1, (kDefinitionBottom - kDefinitionTop + kDefinitionLineGap) / definitionLineStep());
 }
 
+int definitionPageCount() {
+    return std::max(1, int((lines.size() + definitionRows() - 1) / definitionRows()));
+}
+
 int wordListRows() {
     const int bottom = composition.empty() ? 121 : 88;
     return std::min(kRows, std::max(1, (bottom - kWordListTop + kWordListLineStep - bodyFontHeight()) / kWordListLineStep));
@@ -432,8 +436,8 @@ void chooseCandidate(int number) {
 
 void move(int amount) {
     if (page == Page::Definition) {
-        const int maxPage = int((lines.size() - 1) / definitionRows());
-        definitionPage = std::max(0, std::min(maxPage, definitionPage + amount));
+        const int pages = definitionPageCount();
+        definitionPage = (definitionPage + amount % pages + pages) % pages;
     } else if (page == Page::Search) {
         if (searchPending) refreshMatches();
         const int total = usingSd ? matches.size() : demoMatches.size();
@@ -526,7 +530,7 @@ void render() {
             if (i < lines.size()) printAt(lines[i], 5, kDefinitionTop + row * definitionLineStep());
         }
         canvas.setFont(&fonts::efontCN_12);
-        const std::string footer = std::to_string(definitionPage + 1) + "/" + std::to_string((lines.size() + rows - 1) / rows) + "  Space:下一页  `:返回";
+        const std::string footer = std::to_string(definitionPage + 1) + "/" + std::to_string(definitionPageCount()) + "  Space:下一页  `:返回";
         printAt(footer, 5, 121, MUTED);
     } else {
         canvas.setFont(&fonts::efontCN_16);
@@ -700,6 +704,7 @@ void printInputState() {
                   pinyin ? "zh-en" : "en-zh", query.c_str(), composition.c_str(), int(page), candidatePage,
                   unsigned(composer.visibleCount()), unsigned(composer.pageStart()), selected, wordListStart(), wordListRows());
     if (page == Page::Definition) Serial.printf("TEXT: %s\n", definition.c_str());
+    if (page == Page::Definition) Serial.printf("DEFINITION page=%d pages=%d\n", definitionPage, definitionPageCount());
 }
 
 void serialCommand() {
@@ -712,7 +717,7 @@ void serialCommand() {
             if (overflow) Serial.println("ERR command too long");
             else if (command.rfind("put ", 0) == 0) receiveFile(command);
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.3.0 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                Serial.printf("CardputerDict 0.3.1 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
                               (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
                 Serial.printf("boot_ready_ms=%lu\n", (unsigned long)bootReadyMs);
@@ -761,6 +766,8 @@ void serialCommand() {
                 else if (key == "clear") { state.fn = true; handleKey(13, 0, state); }
                 else if (key == "down") { state.fn = true; handleKey(11, 3, state); }
                 else if (key == "up") { state.fn = true; handleKey(11, 2, state); }
+                else if (key == "previous") { state.fn = true; handleKey(10, 3, state); }
+                else if (key == "next") { state.fn = true; handleKey(12, 3, state); }
                 else if (key.size() == 1) injectCharacter(key[0]);
                 else Serial.println("ERR unknown key");
                 printInputState();

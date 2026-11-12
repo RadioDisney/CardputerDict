@@ -1,0 +1,90 @@
+{
+  "passed": true,
+  "status": "CardputerDict 0.3.1 board=14 heap=143608 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1325\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nCMD_DONE",
+  "checks": [
+    {
+      "word": "light",
+      "previous_key": "up",
+      "first_to_last": 4,
+      "pages": 5
+    },
+    {
+      "word": "light",
+      "previous_key": "previous",
+      "first_to_last": 4,
+      "pages": 5
+    },
+    {
+      "word": "light",
+      "next_key": "space",
+      "last_to_first": 0,
+      "full_cycle": true,
+      "pages": 5
+    },
+    {
+      "word": "light",
+      "next_key": "enter",
+      "last_to_first": 0,
+      "full_cycle": true,
+      "pages": 5
+    },
+    {
+      "word": "light",
+      "next_key": "down",
+      "last_to_first": 0,
+      "full_cycle": true,
+      "pages": 5
+    },
+    {
+      "word": "light",
+      "next_key": "next",
+      "last_to_first": 0,
+      "full_cycle": true,
+      "pages": 5
+    },
+    {
+      "word": "苹果",
+      "previous_key": "up",
+      "first_to_last": 1,
+      "pages": 2
+    },
+    {
+      "word": "苹果",
+      "previous_key": "previous",
+      "first_to_last": 1,
+      "pages": 2
+    },
+    {
+      "word": "苹果",
+      "next_key": "space",
+      "last_to_first": 0,
+      "full_cycle": true,
+      "pages": 2
+    },
+    {
+      "word": "苹果",
+      "next_key": "enter",
+      "last_to_first": 0,
+      "full_cycle": true,
+      "pages": 2
+    },
+    {
+      "word": "苹果",
+      "next_key": "down",
+      "last_to_first": 0,
+      "full_cycle": true,
+      "pages": 2
+    },
+    {
+      "word": "苹果",
+      "next_key": "next",
+      "last_to_first": 0,
+      "full_cycle": true,
+      "pages": 2
+    },
+    {
+      "word": "TESLA",
+      "single_page_stays_first": true
+    }
+  ]
+}

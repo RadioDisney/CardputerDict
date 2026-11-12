@@ -1,4 +1,4 @@
-# CardputerDict 0.3.0
+# CardputerDict 0.3.1
 
 普通 M5Stack Cardputer 上的离线英汉 / 汉英词典，支持整词全拼和逐字中文输入。使用 PlatformIO、Arduino、M5Cardputer、M5GFX；无需联网或 PSRAM。
 
@@ -9,6 +9,8 @@
 释义正文行间留白为 4 像素；当前字体高度 14 像素，行步进 18 像素，每页显示 4 行。绘制位置、翻页边界和页码共用同一行数计算。
 
 备选词条列表的行步进由 15 增加到 17 像素。普通状态同屏显示 4 条，拼音输入时显示 2 条；上下选择自动滚动，全部匹配词条仍可选。
+
+释义翻页支持首尾循环：末页继续下一页回首页，首页继续上一页跳末页。适用于 Space、Enter、Fn 翻页组合；单页词条始终停留在该页。
 
 ## 使用
 
@@ -76,7 +78,7 @@ pio run -e cardputer -t upload --upload-port /dev/cu.usbmodemXXXX
 
 使用数据 USB 线。无法识别串口时，按住 G0 插入 USB 后松开。项目使用 8 MB Flash、6 MB 应用分区；不配置 OTA。
 
-合并固件 `CardputerDict-v0.3.0-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
+合并固件 `CardputerDict-v0.3.1-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
 
 原机完整 8 MB Flash 保存在 `backups/cardputer-before-20261110.bin`，恢复步骤见 `docs/RECOVERY.md`。
 

@@ -1,0 +1,61 @@
+{
+  "name": "CardputerDict 中英离线词典",
+  "version": "0.3.0",
+  "device": "Cardputer",
+  "chip": "esp32s3",
+  "flash_size": "8MB",
+  "flash_offset": "0x0",
+  "source_commit": "ceefab088b8fccb9f9c390f8e75d79cc714d13f1",
+  "project": "https://github.com/RadioDisney/CardputerDict",
+  "firmware": {
+    "file": "CardputerDict-0.3.0-M5Burner.bin",
+    "bytes": 1518960,
+    "sha256": "f203c82b3bc9ef2a1e1c6d3656fed96cda1c092f4f3f1979249a281bcfb8e54b"
+  },
+  "partitions": [
+    {
+      "name": "nvs",
+      "type": 1,
+      "subtype": 2,
+      "offset": "0x9000",
+      "size": "0x5000"
+    },
+    {
+      "name": "otadata",
+      "type": 1,
+      "subtype": 0,
+      "offset": "0xe000",
+      "size": "0x2000"
+    },
+    {
+      "name": "factory",
+      "type": 0,
+      "subtype": 0,
+      "offset": "0x10000",
+      "size": "0x600000"
+    },
+    {
+      "name": "storage",
+      "type": 1,
+      "subtype": 130,
+      "offset": "0x610000",
+      "size": "0x1f0000"
+    }
+  ],
+  "cover": {
+    "file": "CardputerDict-cover.jpg",
+    "pixels": [
+      1600,
+      1202
+    ],
+    "bytes": 598491
+  },
+  "visibility": "public",
+  "requires_sd_dictionaries": true,
+  "status": "pending-review",
+  "uploaded": true,
+  "developer_url": "https://burner.m5stack.com/developer",
+  "developer": "RadioDisney",
+  "submitted_date": "2026-11-11",
+  "cover_original": "IMG_20261111_182159.jpg"
+}
