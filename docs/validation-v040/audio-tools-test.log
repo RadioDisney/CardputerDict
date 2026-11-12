@@ -1,0 +1,7 @@
+test_key_names (test_audio_tools.AudioToolsTests.test_key_names) ... ok
+test_pack_preserves_existing_files (test_audio_tools.AudioToolsTests.test_pack_preserves_existing_files) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.061s
+
+OK

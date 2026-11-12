@@ -1,0 +1,23 @@
+{
+  "initial": "CardputerDict 0.4.0 board=14 heap=100448 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1423\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=100448\nCMD_DONE\r\n",
+  "first": "AUDIO state=connecting word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=105580\nCMD_DONE\r\n",
+  "first_done": "INDEX /dictionaries/ecdict.ifo mode=cache ms=391 bytes=48228 saved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nAUDIO state=idle word=language wifi_configured=1 wifi_connected=0 volume=96 frames=66288 peak=25259 path=/audio/cache/en/language.mp3 heap=83008\nCMD_DONE\r\n",
+  "network_log": [
+    "AUDIO state=connecting word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=105772\nCMD_DONE\r\n",
+    "AUDIO state=connecting word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=104624\nCMD_DONE\r\n",
+    "AUDIO state=connecting word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=104624\nCMD_DONE\r\n",
+    "AUDIO start word=language format=mp3 rate=48000 channels=1 path=/audio/cache/en/language.mp3\nAUDIO cached=/audio/cache/en/language.mp3\nAUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/cache/en/language.mp3 heap=78980\nCMD_DONE\r\n",
+    "AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=9216 peak=0 path=/audio/cache/en/language.mp3 heap=78980\nCMD_DONE\r\n",
+    "AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=19456 peak=21139 path=/audio/cache/en/language.mp3 heap=78980\nCMD_DONE\r\n",
+    "AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=29184 peak=25259 path=/audio/cache/en/language.mp3 heap=78980\nCMD_DONE\r\n",
+    "AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=39424 peak=25259 path=/audio/cache/en/language.mp3 heap=78980\nCMD_DONE\r\n",
+    "AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=49152 peak=25259 path=/audio/cache/en/language.mp3 heap=78980\nCMD_DONE\r\n",
+    "AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=59392 peak=25259 path=/audio/cache/en/language.mp3 heap=78980\nCMD_DONE\r\n",
+    "INDEX /dictionaries/ecdict.ifo mode=cache ms=391 bytes=48228 saved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nAUDIO state=idle word=language wifi_configured=1 wifi_connected=0 volume=96 frames=66288 peak=25259 path=/audio/cache/en/language.mp3 heap=83008\nCMD_DONE\r\n"
+  ],
+  "offline": "AUDIO local=/audio/cache/en/language.mp3\nAUDIO start word=language format=mp3 rate=48000 channels=1 path=/audio/cache/en/language.mp3\nAUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/cache/en/language.mp3 heap=21804\nCMD_DONE\r\n",
+  "offline_done": "AUDIO state=idle word=language wifi_configured=1 wifi_connected=0 volume=96 frames=66288 peak=25259 path=/audio/cache/en/language.mp3 heap=82960\nCMD_DONE\r\n",
+  "lookup": "LOOKUP: language\n/'læŋgwidʒ/\nn. 语言, 文字, 措辞\n[计] 语言\n\n复数: languages\r\nCMD_DONE\r\n",
+  "final_status": "CardputerDict 0.4.0 board=14 heap=82488 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1423\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nAUDIO state=idle word=language wifi_configured=1 wifi_connected=0 volume=96 frames=66288 peak=25259 path=/audio/cache/en/language.mp3 heap=82488\nCMD_DONE\r\n",
+  "passed": true
+}

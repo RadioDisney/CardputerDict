@@ -2,6 +2,8 @@
 set -eu
 cd "$(dirname "$0")/.."
 mkdir -p build/tests
+c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/audio_core_test.cpp -o build/tests/audio_core_test
+build/tests/audio_core_test
 c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/index_cache_test.cpp -o build/tests/index_cache_test
 build/tests/index_cache_test sdcard/dictionaries/demo
 c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/ui_text_test.cpp -o build/tests/ui_text_test

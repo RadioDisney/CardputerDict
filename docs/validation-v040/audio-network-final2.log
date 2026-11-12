@@ -1,0 +1,46 @@
+AUDIO state=connecting word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=105580
+CMD_DONE
+
+AUDIO state=connecting word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=105772
+CMD_DONE
+
+AUDIO state=connecting word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=104624
+CMD_DONE
+
+AUDIO state=connecting word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=104624
+CMD_DONE
+
+AUDIO start word=language format=mp3 rate=48000 channels=1 path=/audio/cache/en/language.mp3
+AUDIO cached=/audio/cache/en/language.mp3
+AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/cache/en/language.mp3 heap=78980
+CMD_DONE
+
+AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=9216 peak=0 path=/audio/cache/en/language.mp3 heap=78980
+CMD_DONE
+
+AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=19456 peak=21139 path=/audio/cache/en/language.mp3 heap=78980
+CMD_DONE
+
+AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=29184 peak=25259 path=/audio/cache/en/language.mp3 heap=78980
+CMD_DONE
+
+AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=39424 peak=25259 path=/audio/cache/en/language.mp3 heap=78980
+CMD_DONE
+
+AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=49152 peak=25259 path=/audio/cache/en/language.mp3 heap=78980
+CMD_DONE
+
+AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=59392 peak=25259 path=/audio/cache/en/language.mp3 heap=78980
+CMD_DONE
+
+INDEX /dictionaries/ecdict.ifo mode=cache ms=391 bytes=48228 saved=0
+Loaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes
+AUDIO state=idle word=language wifi_configured=1 wifi_connected=0 volume=96 frames=66288 peak=25259 path=/audio/cache/en/language.mp3 heap=83008
+CMD_DONE
+
+AUDIO local=/audio/cache/en/language.mp3
+AUDIO start word=language format=mp3 rate=48000 channels=1 path=/audio/cache/en/language.mp3
+AUDIO state=playing word=language wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/cache/en/language.mp3 heap=21804
+CMD_DONE
+
+HTTPS pronunciation, SD caching, and offline replay verified

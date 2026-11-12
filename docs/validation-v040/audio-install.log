@@ -1,0 +1,10 @@
+{
+  "file": "apple.mp3",
+  "bytes": 9837,
+  "result": "DONE verified"
+}
+{
+  "file": "hello.wav",
+  "bytes": 120236,
+  "result": "DONE verified"
+}

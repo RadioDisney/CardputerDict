@@ -1,0 +1,10 @@
+{
+  "name": "dr_mp3",
+  "version": "0.7.5",
+  "description": "MP3 decoder by David Reid, vendored snapshot",
+  "license": "MIT-0",
+  "build": {
+    "includeDir": "src",
+    "srcDir": "src"
+  }
+}

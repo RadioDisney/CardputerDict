@@ -1,0 +1,46 @@
+{
+  "initial": "CardputerDict 0.4.0 board=14 heap=82524 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1423\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nAUDIO state=idle word=language wifi_configured=1 wifi_connected=0 volume=96 frames=66288 peak=25259 path=/audio/cache/en/language.mp3 heap=82524\nCMD_DONE\r\n",
+  "mp3": {
+    "start": "AUDIO local=/audio/en/apple.mp3\nAUDIO start word=apple format=mp3 rate=48000 channels=1 path=/audio/en/apple.mp3\nAUDIO state=playing word=apple wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/apple.mp3 heap=21436\nCMD_DONE",
+    "done": "AUDIO state=idle word=apple wifi_configured=1 wifi_connected=0 volume=96 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=82524\nCMD_DONE"
+  },
+  "wav": {
+    "start": "AUDIO local=/audio/en/hello.wav\nAUDIO start word=hello format=wav rate=48000 channels=1 path=/audio/en/hello.wav\nAUDIO state=playing word=hello wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/hello.wav heap=70140\nCMD_DONE",
+    "done": "AUDIO state=idle word=hello wifi_configured=1 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=82524\nCMD_DONE"
+  },
+  "with_all_indexes": "CardputerDict 0.4.0 board=14 heap=46276 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en\ndisplay=240x135 rotation=0\nboot_ready_ms=1423\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=2 start=0 selected=0 count=0\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\ncache path=/dictionaries/cedict.ifo mode=cache load_ms=292 saved=0\ncache path=/dictionaries/pinyin.ifo mode=cache load_ms=285 saved=0\nnote=\nAUDIO state=idle word=hello wifi_configured=1 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=46276\nCMD_DONE\r\n",
+  "repeated": [
+    {
+      "start": "AUDIO local=/audio/en/apple.mp3\nAUDIO start word=apple format=mp3 rate=48000 channels=1 path=/audio/en/apple.mp3\nAUDIO state=playing word=apple wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/apple.mp3 heap=77652\nCMD_DONE",
+      "done": "AUDIO done word=apple frames=56208 peak=24918\nINDEX /dictionaries/cedict.ifo mode=cache ms=293 bytes=12480 saved=0\nLoaded CC-CEDICT 汉英: 198650 headwords, 12416 sparse index bytes\nAUDIO state=idle word=apple wifi_configured=1 wifi_connected=0 volume=96 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=117516\nCMD_DONE"
+    },
+    {
+      "start": "AUDIO local=/audio/en/hello.wav\nAUDIO start word=hello format=wav rate=48000 channels=1 path=/audio/en/hello.wav\nAUDIO state=playing word=hello wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/hello.wav heap=90984\nCMD_DONE",
+      "done": "AUDIO state=idle word=hello wifi_configured=1 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=103384\nCMD_DONE"
+    },
+    {
+      "start": "AUDIO local=/audio/en/apple.mp3\nAUDIO start word=apple format=mp3 rate=48000 channels=1 path=/audio/en/apple.mp3\nAUDIO state=playing word=apple wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/apple.mp3 heap=42268\nCMD_DONE",
+      "done": "AUDIO state=idle word=apple wifi_configured=1 wifi_connected=0 volume=96 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=103384\nCMD_DONE"
+    },
+    {
+      "start": "AUDIO local=/audio/en/hello.wav\nAUDIO start word=hello format=wav rate=48000 channels=1 path=/audio/en/hello.wav\nAUDIO state=playing word=hello wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/hello.wav heap=90984\nCMD_DONE",
+      "done": "AUDIO state=idle word=hello wifi_configured=1 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=103384\nCMD_DONE"
+    },
+    {
+      "start": "AUDIO local=/audio/en/apple.mp3\nAUDIO start word=apple format=mp3 rate=48000 channels=1 path=/audio/en/apple.mp3\nAUDIO state=playing word=apple wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/apple.mp3 heap=42268\nCMD_DONE",
+      "done": "AUDIO state=idle word=apple wifi_configured=1 wifi_connected=0 volume=96 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=103384\nCMD_DONE"
+    }
+  ],
+  "cancel": "CMD_DONE\r\n",
+  "invalid_word": "AUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=96 frames=512 peak=0 path=/audio/en/apple.mp3 heap=46356\nCMD_DONE\r\n",
+  "online": {
+    "start": "AUDIO state=connecting word=screen wifi_configured=1 wifi_connected=0 volume=96 frames=512 peak=0 path=/audio/en/apple.mp3 heap=102956\nCMD_DONE",
+    "done": "INDEX /dictionaries/ecdict.ifo mode=cache ms=391 bytes=48228 saved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nAUDIO state=idle word=screen wifi_configured=1 wifi_connected=0 volume=96 frames=86400 peak=23168 path=/audio/cache/en/screen.mp3 heap=81672\nCMD_DONE"
+  },
+  "cached_offline": {
+    "start": "AUDIO local=/audio/cache/en/screen.mp3\nAUDIO start word=screen format=mp3 rate=44100 channels=2 path=/audio/cache/en/screen.mp3\nAUDIO state=playing word=screen wifi_configured=1 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/cache/en/screen.mp3 heap=20584\nCMD_DONE",
+    "done": "AUDIO state=idle word=screen wifi_configured=1 wifi_connected=0 volume=96 frames=86400 peak=23168 path=/audio/cache/en/screen.mp3 heap=81672\nCMD_DONE"
+  },
+  "final": "CardputerDict 0.4.0 board=14 heap=81672 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1423\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nAUDIO state=idle word=screen wifi_configured=1 wifi_connected=0 volume=96 frames=86400 peak=23168 path=/audio/cache/en/screen.mp3 heap=81672\nCMD_DONE\r\n",
+  "passed": true
+}

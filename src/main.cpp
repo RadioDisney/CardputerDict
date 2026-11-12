@@ -7,6 +7,8 @@
 #include "body_font.h"
 #include "ime_core.h"
 #include "ui_text.h"
+#include "pronunciation.h"
+#include <esp_heap_caps.h>
 
 namespace {
 constexpr uint16_t BG = 0x0863, FG = 0xef7d, MUTED = 0x8c92;
@@ -63,12 +65,18 @@ bool keyWasDown[56] = {};
 bool searchPending = false;
 uint32_t searchAt = 0;
 uint32_t bootReadyMs = 0;
-enum class Page { Search, Definition, Help };
+uint32_t audioNoticeUntil = 0;
+bool audioIndexesSuspended = false;
+std::string audioRestorePath, wifiSsid, wifiPassword, wifiError;
+int wifiField = 0;
+enum class Page { Search, Definition, Help, Wifi };
 Page page = Page::Search;
+Page wifiReturnPage = Page::Search;
 
 M5GFX& screen() { return M5Cardputer.Display; }
 bool loadLexicon(SdLexicon& lexicon, const std::string& path, bool rebuild = false);
 void switchDirection(bool chinese);
+void render();
 
 void printAt(const std::string& text, int x, int y, uint16_t color = FG) {
     canvas.setTextColor(color);
@@ -172,16 +180,6 @@ void clearQuery() {
     refreshMatches();
 }
 
-bool readIndexCache(const std::string& path, std::vector<uint8_t>& data) {
-    File file = SD.open(path.c_str(), FILE_READ);
-    constexpr size_t maximum = dict::kCacheHeaderBytes + ((1000000 + dict::kStride - 1) / dict::kStride) * 4;
-    if (!file || file.size() < dict::kCacheHeaderBytes || file.size() > maximum) return false;
-    data.resize(file.size());
-    const bool ok = file.read(data.data(), data.size()) == data.size();
-    file.close();
-    return ok;
-}
-
 bool writeIndexCache(const std::string& path, const std::vector<uint8_t>& data) {
     const std::string temporary = path + ".tmp";
     // Only disposable derived cache files are replaced; source dictionaries stay intact.
@@ -218,8 +216,8 @@ bool loadLexicon(SdLexicon& lexicon, const std::string& ifoPath, bool rebuild) {
     dict::Metadata meta;
     std::string error;
     if (!dict::parseMetadata(source, meta, error)) { statusMessage = error; return false; }
-    // Restore/serialize temporarily holds both the byte representation and anchors.
-    const size_t needed = ((meta.count + dict::kStride - 1) / dict::kStride) * sizeof(uint32_t) * 2 + 32768;
+    const size_t anchorBytes = ((meta.count + dict::kStride - 1) / dict::kStride) * sizeof(uint32_t);
+    const size_t needed = anchorBytes + 16384;
     if (ESP.getFreeHeap() < needed) { statusMessage = "Not enough RAM for dictionary index"; return false; }
     const auto prefix = ifoPath.substr(0, ifoPath.size() - 4);
     lexicon.indexFile.file = SD.open((prefix + ".idx").c_str(), FILE_READ);
@@ -234,8 +232,9 @@ bool loadLexicon(SdLexicon& lexicon, const std::string& ifoPath, bool rebuild) {
                             dict::sampleCrc(lexicon.bodyFile, identity.bodySampleCrc);
     const std::string cachePath = prefix + ".cidx";
     if (!rebuild && identified) {
-        std::vector<uint8_t> cached;
-        if (readIndexCache(cachePath, cached)) {
+        SdReader cached;
+        cached.file = SD.open(cachePath.c_str(), FILE_READ);
+        if (cached.file) {
             lexicon.cacheHit = lexicon.dictionary.restoreIndex(lexicon.indexFile, lexicon.bodyFile, meta, identity, cached, error);
             if (!lexicon.cacheHit) Serial.printf("Index cache rejected %s: %s\n", ifoPath.c_str(), error.c_str());
         }
@@ -253,7 +252,7 @@ bool loadLexicon(SdLexicon& lexicon, const std::string& ifoPath, bool rebuild) {
         lexicon.reset();
         return false;
     }
-    if (!lexicon.cacheHit && identified) {
+    if (!lexicon.cacheHit && identified && heap_caps_get_largest_free_block(MALLOC_CAP_8BIT) > anchorBytes + dict::kCacheHeaderBytes + 4096) {
         const auto serialized = lexicon.dictionary.serializeIndex(identity);
         lexicon.cacheSaved = !serialized.empty() && writeIndexCache(cachePath, serialized);
         if (!lexicon.cacheSaved) Serial.printf("Index cache save failed %s; dictionary usable\n", ifoPath.c_str());
@@ -434,6 +433,47 @@ void chooseCandidate(int number) {
     if (composer.select(number, query)) scheduleSearch();
 }
 
+void prepareAudioNetwork() {
+    if (audioIndexesSuspended) return;
+    audioRestorePath = usingSd && activeLexicon ? activeLexicon->path : "";
+    audioIndexesSuspended = true;
+    activeLexicon = nullptr; usingSd = false;
+    englishLexicon.reset(); chineseLexicon.reset(); pinyinLexicon.reset(); otherLexicon.reset();
+}
+
+void restoreAfterAudioNetwork() {
+    if (!audioIndexesSuspended || pronunciation::busy()) return;
+    audioIndexesSuspended = false;
+    const int oldSelected = selected;
+    if (!audioRestorePath.empty()) loadDictionary(audioRestorePath);
+    audioRestorePath.clear();
+    refreshMatches();
+    const int count = usingSd ? int(matches.size()) : int(demoMatches.size());
+    selected = std::max(0, std::min(oldSelected, std::max(0, count - 1)));
+    dirty = true;
+}
+
+void openWifiSettings() {
+    pronunciation::stop(); restoreAfterAudioNetwork();
+    wifiReturnPage = page == Page::Wifi ? Page::Search : page;
+    wifiSsid = pronunciation::savedSsid(); wifiPassword.clear(); wifiError.clear(); wifiField = 0;
+    page = Page::Wifi; dirty = true;
+}
+
+void pronounceSelected() {
+    if (pronunciation::busy()) { pronunciation::stop(); dirty = true; return; }
+    if (page == Page::Help || page == Page::Wifi || !composition.empty()) return;
+    std::string value;
+    if (page == Page::Definition) value = headword;
+    else {
+        if (searchPending) refreshMatches();
+        if (usingSd && selected < int(matches.size())) value = matches[selected].word;
+        else if (!usingSd && selected < int(demoMatches.size())) value = kDemo[demoMatches[selected]].word;
+    }
+    pronunciation::request(value, sdMounted);
+    dirty = true;
+}
+
 void move(int amount) {
     if (page == Page::Definition) {
         const int pages = definitionPageCount();
@@ -449,10 +489,39 @@ void move(int amount) {
 void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
     const auto key = M5Cardputer.Keyboard.getKeyValue({x, y});
     const char base = key.value_first;
+    if (pronunciation::busy()) {
+        if (base == '`' || (state.fn && base == 'p')) pronunciation::stop();
+        else if (state.fn && base == '=') pronunciation::volume(16);
+        else if (state.fn && base == '-') pronunciation::volume(-16);
+        dirty = true; return;
+    }
+    if (page == Page::Wifi) {
+        if (base == '`') { wifiPassword.clear(); page = wifiReturnPage; dirty = true; return; }
+        if (x == 0 && y == 1) { wifiField = 1 - wifiField; dirty = true; return; }
+        auto& field = wifiField ? wifiPassword : wifiSsid;
+        if (x == 13 && y == 0) { dict::popUtf8(field); dirty = true; return; }
+        if (x == 13 && y == 2) {
+            if (wifiField == 0) wifiField = 1;
+            else if (pronunciation::saveWifi(wifiSsid, wifiPassword)) {
+                wifiPassword.clear(); page = wifiReturnPage;
+            } else wifiError = "SSID不能为空，密码至少8位";
+            dirty = true; return;
+        }
+        if (!state.fn && !state.ctrl && !state.alt && uint8_t(base) >= 32 && uint8_t(base) < 127) {
+            const char c = state.shift ? key.value_second : base;
+            if (field.size() < (wifiField ? 63u : 32u)) field += c;
+            wifiError.clear(); dirty = true;
+        }
+        return;
+    }
     if (state.fn) {
         if (base == 'h') { page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
         else if (base == 'r') scanSd(state.shift);
         else if (base == 'd') nextDictionary();
+        else if (base == 'p') pronounceSelected();
+        else if (base == 'w') openWifiSettings();
+        else if (base == '=') pronunciation::volume(16);
+        else if (base == '-') pronunciation::volume(-16);
         else if (x == 13 && y == 0) clearQuery();
         else if (base == ';') move(-1);
         else if (base == '.') move(1);
@@ -515,10 +584,27 @@ void render() {
     const int directionX = canvas.width() - 5 - textWidth(direction);
     printAt(shortcut, directionX - 5 - textWidth(shortcut), 2, MUTED);
     printAt(direction, directionX, 2, ACCENT);
-    if (page == Page::Help) {
+    if (pronunciation::busy()) {
         canvas.setFont(&kBodyFont);
-        const char* help[] = {"Tab 切换  Enter 查词", "Fn+; / Fn+. 上下/翻页", "空格首选  1-9 选词", "[ / ] 翻候选  v=ü", "Fn+D 换词库  Fn+R 重载", "Fn+退格 清空  ` 返回"};
-        for (size_t i = 0; i < 6; ++i) printAt(help[i], 4, 23 + int(i) * 16);
+        printAt(fitEnd(pronunciation::word(), 228), 5, 25, ACCENT);
+        printAt(fitEnd(pronunciation::message(), 228), 5, 49);
+        printAt("Fn+P 或 ` 停止", 5, 77, MUTED);
+        printAt("Fn+= / Fn+- 调整音量", 5, 96, MUTED);
+        canvas.setFont(&fonts::efontCN_12);
+        printAt("音量 " + std::to_string(pronunciation::volume() * 100 / 255) + "%", 5, 121, MUTED);
+    } else if (page == Page::Wifi) {
+        canvas.setFont(&kBodyFont);
+        printAt("WiFi设置（2.4GHz）", 5, 22, ACCENT);
+        printAt((wifiField == 0 ? "> " : "  ") + std::string("SSID: ") + fitTail(wifiSsid, 150), 5, 43);
+        printAt((wifiField == 1 ? "> " : "  ") + std::string("密码: ") + fitTail(std::string(wifiPassword.size(), '*'), 150), 5, 62);
+        printAt("Tab换字段 Enter下一步/保存", 5, 82, MUTED);
+        canvas.setFont(&fonts::efontCN_12);
+        printAt("联网获取将发送所选英文词", 5, 102, MUTED);
+        printAt(wifiError.empty() ? "`取消，空密码连接开放网络" : fitEnd(wifiError, 230), 5, 120, wifiError.empty() ? MUTED : FG);
+    } else if (page == Page::Help) {
+        canvas.setFont(&kBodyFont);
+        const char* help[] = {"Tab 切换  Enter 查词", "Fn+; / Fn+. 上下/翻页", "空格首选  1-9 选词", "[ / ] 翻候选  v=ü", "Fn+D 换词库  Fn+R 重载", "Fn+退格 清空  ` 返回", "Fn+P 朗读  Fn+W WiFi"};
+        for (size_t i = 0; i < 7; ++i) printAt(fitEnd(help[i], 232), 4, 23 + int(i) * 16);
     } else if (page == Page::Definition) {
         canvas.setFont(&fonts::efontCN_16);
         printAt(fitEnd(headword, 228), 5, 21, ACCENT);
@@ -530,7 +616,7 @@ void render() {
             if (i < lines.size()) printAt(lines[i], 5, kDefinitionTop + row * definitionLineStep());
         }
         canvas.setFont(&fonts::efontCN_12);
-        const std::string footer = std::to_string(definitionPage + 1) + "/" + std::to_string(definitionPageCount()) + "  Space:下一页  `:返回";
+        const std::string footer = std::to_string(definitionPage + 1) + "/" + std::to_string(definitionPageCount()) + " Space下一页 Fn+P朗读";
         printAt(footer, 5, 121, MUTED);
     } else {
         canvas.setFont(&fonts::efontCN_16);
@@ -576,6 +662,11 @@ void render() {
         const std::string footer = usingSd ? "SD " + std::to_string(dictionary().count()) + "词  Fn+H帮助" : "演示 " + std::to_string(kDemoCount) + "词  Fn+H帮助";
         printAt(footer, 4, 121, MUTED);
     }
+    if (!pronunciation::busy() && page != Page::Wifi && !pronunciation::message().empty() && int32_t(audioNoticeUntil - millis()) > 0) {
+        canvas.fillRect(0, 118, 240, 17, PANEL);
+        canvas.setFont(&fonts::efontCN_12);
+        printAt(fitEnd(pronunciation::message(), 230), 4, 120, ACCENT);
+    }
     canvas.pushSprite(0, 0);
     dirty = false;
 }
@@ -588,22 +679,25 @@ uint32_t fnvUpdate(uint32_t hash, const uint8_t* bytes, size_t length) {
 void receiveFile(const std::string& request) {
     char name[64] = {};
     unsigned long length = 0, expectedHash = 0;
-    if (sscanf(request.c_str(), "put %63s %lu %lx", name, &length, &expectedHash) != 3 ||
+    const bool audioUpload = request.rfind("putaudio ", 0) == 0;
+    if (sscanf(request.c_str(), audioUpload ? "putaudio %63s %lu %lx" : "put %63s %lu %lx", name, &length, &expectedHash) != 3 ||
         !length || length > 64 * 1024 * 1024 || !sdMounted) {
         Serial.println("ERR invalid request or SD unavailable"); return;
     }
     const std::string base = name;
-    if (base.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-") != std::string::npos ||
+    if (base.find_first_not_of("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-%") != std::string::npos ||
         base[0] == '.' || base.find("..") != std::string::npos) {
         Serial.println("ERR invalid filename"); return;
     }
     const auto dot = base.find_last_of('.');
-    if (dot == std::string::npos || (base.substr(dot) != ".ifo" && base.substr(dot) != ".idx" && base.substr(dot) != ".dict" &&
-        base.substr(dot) != ".txt" && base.substr(dot) != ".json")) {
+    if (audioUpload ? (dot == std::string::npos || (base.substr(dot) != ".mp3" && base.substr(dot) != ".wav") || length > 512 * 1024) :
+        (dot == std::string::npos || (base.substr(dot) != ".ifo" && base.substr(dot) != ".idx" && base.substr(dot) != ".dict" &&
+        base.substr(dot) != ".txt" && base.substr(dot) != ".json"))) {
         Serial.println("ERR only dictionary data and license files allowed"); return;
     }
-    const std::string target = "/dictionaries/" + base;
-    const std::string partial = "/dictionaries/." + base + ".part";
+    const std::string directory = audioUpload ? "/audio/en" : "/dictionaries";
+    const std::string target = directory + "/" + base;
+    const std::string partial = directory + "/." + base + ".part";
     // Keep this out of serialCommand's stack frame when the compiler inlines
     // receiveFile; normal commands can invoke nested index-cache/file routines.
     static uint8_t buffer[4096];
@@ -622,7 +716,8 @@ void receiveFile(const std::string& request) {
     }
     if (SD.exists(partial.c_str())) { Serial.println("ERR partial file exists; remove it before retrying"); return; }
     if (SD.totalBytes() - SD.usedBytes() < uint64_t(length) + 65536) { Serial.println("ERR insufficient SD space"); return; }
-    if (!SD.exists("/dictionaries") && !SD.mkdir("/dictionaries")) { Serial.println("ERR mkdir failed"); return; }
+    if (audioUpload && !SD.exists("/audio")) SD.mkdir("/audio");
+    if (!SD.exists(directory.c_str()) && !SD.mkdir(directory.c_str())) { Serial.println("ERR mkdir failed"); return; }
     File output = SD.open(partial.c_str(), FILE_WRITE);
     if (!output) { Serial.println("ERR cannot create partial file"); return; }
     Serial.println("READY 4096");
@@ -655,7 +750,7 @@ void receiveFile(const std::string& request) {
         if (millis() - lastDraw > 500) {
             screen().fillScreen(BG); screen().setFont(&kBodyFont);
             screen().setTextColor(FG);
-            printScreenAt("USB 词库传输中", 6, 30);
+            printScreenAt(audioUpload ? "USB 音频传输中" : "USB 词库传输中", 6, 30);
             printScreenAt(name, 6, 55);
             printScreenAt(std::to_string(received / 1024) + " / " + std::to_string(length / 1024) + " KB", 6, 80);
             lastDraw = millis();
@@ -715,9 +810,11 @@ void serialCommand() {
         if (c == '\r') continue;
         if (c == '\n') {
             if (overflow) Serial.println("ERR command too long");
-            else if (command.rfind("put ", 0) == 0) receiveFile(command);
+            else if (pronunciation::busy() && command != "status" && command != "audio status" && command != "audio stop" && command != "screenshot" && command != "press pronounce")
+                Serial.println("ERR audio busy; use audio stop");
+            else if (command.rfind("put ", 0) == 0 || command.rfind("putaudio ", 0) == 0) receiveFile(command);
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.3.1 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                Serial.printf("CardputerDict 0.4.0 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
                               (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
                 Serial.printf("boot_ready_ms=%lu\n", (unsigned long)bootReadyMs);
@@ -732,6 +829,14 @@ void serialCommand() {
                         (unsigned long)lexicon->loadMs, lexicon->cacheSaved);
                 }
                 Serial.printf("note=%s\n", statusMessage.c_str());
+                pronunciation::diagnostics();
+            } else if (command == "audio status") pronunciation::diagnostics();
+            else if (command == "audio stop") pronunciation::stop();
+            else if (command == "wifi") openWifiSettings();
+            else if (command.rfind("speak ", 0) == 0) {
+                pronunciation::request(command.substr(6), sdMounted); pronunciation::diagnostics();
+            } else if (command.rfind("speaklocal ", 0) == 0) {
+                pronunciation::request(command.substr(11), sdMounted, false); pronunciation::diagnostics();
             } else if (command == "reload") scanSd();
             else if (command == "reindex") scanSd(true);
             else if (command == "restart") { Serial.println("RESTARTING"); Serial.flush(); delay(10); ESP.restart(); }
@@ -768,6 +873,7 @@ void serialCommand() {
                 else if (key == "up") { state.fn = true; handleKey(11, 2, state); }
                 else if (key == "previous") { state.fn = true; handleKey(10, 3, state); }
                 else if (key == "next") { state.fn = true; handleKey(12, 3, state); }
+                else if (key == "pronounce") { state.fn = true; handleKey(10, 1, state); }
                 else if (key.size() == 1) injectCharacter(key[0]);
                 else Serial.println("ERR unknown key");
                 printInputState();
@@ -781,7 +887,7 @@ void serialCommand() {
                 if (dict::compare(first, query) != 0 || first.empty()) Serial.println("NOT_FOUND");
                 else { openSelected(); Serial.println(definition.c_str()); }
             } else if (!command.empty()) Serial.println("Commands: status | lookup WORD | reload | reindex | ime PINYIN | screenshot | type TEXT | press KEY");
-            if (command != "screenshot" && command.rfind("put ", 0) != 0) Serial.println("CMD_DONE");
+            if (command != "screenshot" && command.rfind("put ", 0) != 0 && command.rfind("putaudio ", 0) != 0) Serial.println("CMD_DONE");
             command.clear(); overflow = false;
         } else if (command.size() < 128) command += c;
         else overflow = true;
@@ -796,9 +902,11 @@ void setup() {
     Serial.setTxTimeoutMs(2000);
     auto cfg = M5.config();
     cfg.serial_baudrate = 115200;
-    cfg.internal_spk = false;
+    cfg.internal_spk = true;
     cfg.internal_mic = false;
     M5Cardputer.begin(cfg, true);
+    pronunciation::begin();
+    pronunciation::setPrepareNetwork(prepareAudioNetwork);
     screen().setRotation(0);  // M5GFX includes Cardputer's panel rotation offset.
     screen().setBrightness(150);
     canvas.setColorDepth(16);
@@ -831,8 +939,12 @@ void loop() {
         if (!keyWasDown[i]) handleKey(point.x, point.y, state);
     }
     memcpy(keyWasDown, down, sizeof(down));
+    pronunciation::tick();
+    restoreAfterAudioNetwork();
+    if (pronunciation::changed()) { audioNoticeUntil = millis() + 2500; dirty = true; }
+    if (audioNoticeUntil && int32_t(millis() - audioNoticeUntil) >= 0) { audioNoticeUntil = 0; dirty = true; }
     if (searchPending && int32_t(millis() - searchAt) >= 0) refreshMatches();
-    if (M5Cardputer.BtnA.wasPressed()) { page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
+    if (M5Cardputer.BtnA.wasPressed() && !pronunciation::busy() && page != Page::Wifi) { page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
     serialCommand();
     if (dirty) render();
     delay(5);

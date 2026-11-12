@@ -28,7 +28,7 @@ def main():
     result = {}
     with open_device(args.port, timeout=0.1) as port:
         status = command(port, "status", timeout=240)
-        assert "CardputerDict 0.3.0" in status, status
+        assert "CardputerDict 0." in status, status
         result["initial_status"] = status
         print(status, flush=True)
         if args.rebuild:

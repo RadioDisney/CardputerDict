@@ -1,4 +1,4 @@
-# CardputerDict 0.3.1
+# CardputerDict 0.4.0
 
 普通 M5Stack Cardputer 上的离线英汉 / 汉英词典，支持整词全拼和逐字中文输入。使用 PlatformIO、Arduino、M5Cardputer、M5GFX；无需联网或 PSRAM。
 
@@ -11,6 +11,71 @@
 备选词条列表的行步进由 15 增加到 17 像素。普通状态同屏显示 4 条，拼音输入时显示 2 条；上下选择自动滚动，全部匹配词条仍可选。
 
 释义翻页支持首尾循环：末页继续下一页回首页，首页继续上一页跳末页。适用于 Space、Enter、Fn 翻页组合；单页词条始终停留在该页。
+
+## 英语朗读（0.4.0）
+
+在英文词条列表或释义页按 **Fn+P** 朗读当前词条；再次 Fn+P 或反引号键停止。**Fn+= / Fn+-** 调整音量。默认音量约 38%，设置会保留。
+
+发音按以下顺序查找：
+
+1. `/audio/en/<词名>.mp3` 或 `.wav`（用户导入的离线音频）。
+2. `/audio/cache/en/<词名>.mp3`（已联网获取的缓存）。
+3. 没有本地音频时，连接已配置的 WiFi，经 HTTPS 请求有道英文单词发音，写入 SD 并回读校验，之后播放。
+
+**Fn+W** 打开 WiFi 设置：输入 2.4 GHz SSID，Enter 到密码栏，输入密码后 Enter 保存；Tab 切换字段，反引号取消。密码显示为星号，保存在本机 NVS，串口和发布固件不包含用户凭据。此版本用实体键盘输入 ASCII SSID/密码。开放网络可留空密码；普通 WPA/WPA2 密码为 8–63 字符。
+
+不会开机自动连接 WiFi。仅在主动朗读且缺少本地音频时联网，获取完成或失败后关闭 WiFi；在线请求会把所选英文词发送到 `dict.youdao.com`，不会发送 WiFi 密码。使用根证书和 NTP 校时验证 HTTPS，不跳过证书校验。该服务的可用性和返回语音受服务端影响；离线文件与已有缓存不受网络影响。
+
+支持 MP3，以及 8/16-bit PCM WAV，单声道或双声道，8–48 kHz。每个文件上限 512 KB、最长 30 秒。使用 16 KB 压缩输入缓冲和三块 PCM 缓冲流式播放，不把整个音频解码到 RAM。当前只朗读 ASCII 英语词/短语，支持字母、数字、空格、撇号、连字符和句点；不直接朗读中文词头，不做全离线任意单词 TTS。
+
+输入受支持字符时将词头转为小写，文件名中空格、撇号和句点等按百分号编码，例如 `apple butter` 对应 `apple%20butter.mp3`。长词可用下面工具生成正确文件名。
+
+### 离线音频导入
+
+准备按英文词头命名的 MP3/WAV 文件，例如 Apple.mp3、hello.wav。批量生成可复制的 SD 目录（标准 Python 即可）：
+
+```sh
+python3 tools/prepare_audio_pack.py /path/to/your-pronunciations /path/to/staging
+```
+
+把 staging 内生成的 `audio/` 目录复制到 FAT32 SD 卡根目录。脚本会拒绝覆盖不同内容的已有文件。可导入自己的常用词音频集；项目没有附带数万个单词的录音包，网络缓存按实际使用逐词积累。音频来源的许可分别适用。
+
+也可通过 USB 传到机内 SD（电脑需要 pyserial）：
+
+```sh
+python3 tools/install_audio.py /dev/cu.usbmodemXXXX apple /path/to/apple.mp3
+python3 tools/install_audio.py /dev/cu.usbmodemXXXX hello /path/to/hello.wav
+```
+
+目录示例：
+
+```text
+audio/
+    en/apple.mp3
+    en/hello.wav
+    en/apple%20butter.mp3
+    cache/en/radio.mp3
+```
+
+播放期间可用 Fn+P / 反引号停止。WiFi 连接和获取有超时；进入 HTTPS 建连/请求阶段后，按键可能需等待本次有限时长请求返回。下载流传输期间会检查取消按键，不会启用不完整的 `.part` 缓存。SD 损坏、文件格式不支持、没有网络或证书验证失败均会显示提示。
+
+联网和低内存朗读会临时释放词典索引，播放/停止后从缓存恢复。索引使用最多 4 KB 的分块存储与流式恢复，适应 WiFi 使用后的堆碎片；原来的 cidx 文件格式兼容。扬声器在结束后释放 I2S 和任务缓冲。
+
+实机已安装 apple 的 MP3 和 hello 的 WAV 供试用，并验证了 language、screen 等词首次联网获取及离线重播；这类服务音频仅存设备 SD，源码和发布包不附带这些录音。
+
+### 朗读诊断与测试
+
+```sh
+python3 tools/check_pronunciation.py /dev/cu.usbmodemXXXX --output build/pronunciation
+# 需要预先在设备配置 WiFi；该词应尚未缓存：
+python3 tools/check_pronunciation.py /dev/cu.usbmodemXXXX --online-word pronunciation --output build/pronunciation
+```
+
+串口支持 `speak apple`、`speaklocal apple`（禁止联网）、`audio status`、`audio stop`、`wifi`，以及 `press pronounce`（共用 Fn+P 处理逻辑）。设置页也可从设备 Fn+W 打开，不必将密码发送到电脑。构建时使用的 dr_mp3 解码器及根证书来源见 third_party/ 与 include/pronunciation_ca.h。
+
+通过 PlatformIO 更新应用会保留现有 WiFi 设置；从 0x0 全量刷入合并固件用于全新安装时，片内设置会重置，需要重新配置 WiFi，SD 音频仍保留。
+
+验证记录见 `docs/PRONUNCIATION.md` 和 `docs/validation-v040/`。
 
 ## 使用
 
@@ -37,6 +102,9 @@ Tab 会同时切换词库和输入方式，并清空当前查询。每套词库�
 | 反引号键 | 返回列表；取消拼音或清空查询 |
 | Fn + Backspace | 清空查询 |
 | Fn + H / G0 | 帮助 |
+| Fn + P | 朗读当前英文词条 / 停止 |
+| Fn + W | 设置 WiFi |
+| Fn + = / Fn + - | 增加 / 减少音量 |
 | Fn + D | 切换其他 SD 词库或内置演示 |
 | Fn + R | 重新挂载 SD，从磁盘索引缓存快速加载 |
 | Fn + Shift + R | 完整重新校验启动词库、汉英与拼音，并重建 SD 索引缓存 |
@@ -78,7 +146,7 @@ pio run -e cardputer -t upload --upload-port /dev/cu.usbmodemXXXX
 
 使用数据 USB 线。无法识别串口时，按住 G0 插入 USB 后松开。项目使用 8 MB Flash、6 MB 应用分区；不配置 OTA。
 
-合并固件 `CardputerDict-v0.3.1-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
+合并固件 `CardputerDict-v0.4.0-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
 
 原机完整 8 MB Flash 保存在 `backups/cardputer-before-20261110.bin`，恢复步骤见 `docs/RECOVERY.md`。
 
@@ -130,7 +198,7 @@ python3 tools/device_check.py /dev/cu.usbmodemXXXX --expected-words 770611 --bil
 
 ## 范围与许可
 
-支持整词全拼、逐字输入和短拼写前缀候选；不做整句自动分词、智能纠错或用户词频学习。查询使用词头定位，列表也可能显示排序相邻词。当前不读取 dict.dz、idx.gz、HTML、64 位偏移或 syn 别名索引，不支持发音和自动词形还原。单条释义最多读取 12 KB，超出时显示提示。
+支持整词全拼、逐字输入和短拼写前缀候选；不做整句自动分词、智能纠错或用户词频学习。查询使用词头定位，列表也可能显示排序相邻词。当前不读取 dict.dz、idx.gz、HTML、64 位偏移或 syn 别名索引，不支持自动词形还原。单条释义最多读取 12 KB，超出时显示提示。
 
 正文使用 efontCN_14 和 DejaVu Sans 生成的 Latin / IPA / Cyrillic 后备字库（包括 TESLA 音标中的 ә）；生僻字及字库范围外符号可能缺字。SD 拼音候选限制为 GB2312 字符。
 
@@ -164,3 +232,5 @@ python3 tools/benchmark_startup.py /dev/cu.usbmodemXXXX --rebuild --output build
 ```
 
 验证记录见 `docs/INDEX_CACHE.md` 与 `docs/validation-v030/`。
+
+MP3 解码器采用 dr_mp3（David Reid，MIT-0；基于 minimp3），以 vendored 快照固定源文件，见 `third_party/dr_mp3-LICENSE.txt` 与 `dr_mp3-source.json`。

@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "initial": "AUDIO state=connecting word=comprehension wifi_configured=1 wifi_connected=0 volume=96 frames=66288 peak=25259 path=/audio/cache/en/language.mp3 heap=104404\nCMD_DONE\r\n",
+  "stop": "CMD_DONE\r\n",
+  "final": "INDEX /dictionaries/ecdict.ifo mode=cache ms=391 bytes=48228 saved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nCardputerDict 0.4.0 board=14 heap=83184 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1418\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nAUDIO state=idle word=comprehension wifi_configured=1 wifi_connected=0 volume=96 frames=66288 peak=25259 path=/audio/cache/en/language.mp3 heap=83184\nCMD_DONE\r\n"
+}

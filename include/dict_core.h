@@ -5,6 +5,8 @@
 #include <cstring>
 #include <functional>
 #include <limits>
+#include <memory>
+#include <new>
 #include <string>
 #include <vector>
 
@@ -170,24 +172,49 @@ inline void putLittle32(uint8_t* bytes, uint32_t value) {
     for (int i = 0; i < 4; ++i) bytes[i] = uint8_t(value >> (i * 8));
 }
 
+// Small allocations remain available after WiFi/TLS fragments the ESP32 heap.
+// The serialized layout stays a flat sequence of 32-bit offsets.
+class AnchorStorage {
+public:
+    void reset() { for (auto& block : blocks_) block.reset(); }
+    bool allocate(size_t count) {
+        reset();
+        if (count > kBlockEntries * kBlocks) return false;
+        for (size_t i = 0; count; ++i) {
+            const size_t n = std::min(count, kBlockEntries);
+            blocks_[i].reset(new (std::nothrow) uint32_t[n]);
+            if (!blocks_[i]) { reset(); return false; }
+            count -= n;
+        }
+        return true;
+    }
+    uint32_t& operator[](size_t index) { return blocks_[index / kBlockEntries][index % kBlockEntries]; }
+    const uint32_t& operator[](size_t index) const { return blocks_[index / kBlockEntries][index % kBlockEntries]; }
+private:
+    static constexpr size_t kBlockEntries = 1024;
+    static constexpr size_t kBlocks = 16;
+    std::unique_ptr<uint32_t[]> blocks_[kBlocks];
+};
+
 class StarDict {
 public:
     bool open(Reader& index, Reader& body, const Metadata& meta,
               std::string& error, std::function<void(uint32_t, uint32_t)> progress = {}) {
         ready_ = false;
-        anchors_.clear();
+        anchors_.reset(); anchorCount_ = 0;
         index_ = &index; body_ = &body; meta_ = meta; cached_.reset(index_);
         if (meta.count == 0 || meta.count > 1000000 || index.size() != meta.indexBytes) {
             error = "Index size / wordcount mismatch"; return false;
         }
-        anchors_.reserve((meta.count + kStride - 1) / kStride);
+        anchorCount_ = (meta.count + kStride - 1) / kStride;
+        if (!anchors_.allocate(anchorCount_)) { anchorCount_ = 0; error = "Not enough RAM for index blocks"; return false; }
         uint32_t pos = 0;
         std::string previous;
         for (uint32_t i = 0; i < meta.count; ++i) {
             Entry entry;
             if (!record(pos, entry)) { error = "Invalid index or definition range"; return false; }
             if (i && indexCompare(previous, entry.word) > 0) { error = "Index is not in StarDict order"; return false; }
-            if (i % kStride == 0) anchors_.push_back(pos);
+            if (i % kStride == 0) anchors_[i / kStride] = pos;
             previous = entry.word;
             pos = entry.next;
             if (progress && i % 1024 == 0) progress(i, meta.count);
@@ -200,12 +227,12 @@ public:
 
     std::vector<uint8_t> serializeIndex(const CacheIdentity& identity) const {
         if (!ready_) return {};
-        std::vector<uint8_t> data(kCacheHeaderBytes + anchors_.size() * 4, 0);
+        std::vector<uint8_t> data(kCacheHeaderBytes + anchorCount_ * 4, 0);
         memcpy(data.data(), "CPDIDX01", 8);
-        const uint32_t fields[] = {1, kStride, meta_.count, index_->size(), body_->size(), uint32_t(anchors_.size()),
+        const uint32_t fields[] = {1, kStride, meta_.count, index_->size(), body_->size(), uint32_t(anchorCount_),
             identity.ifoCrc, identity.ifoModified, identity.indexModified, identity.bodyModified, identity.indexSampleCrc, identity.bodySampleCrc};
         for (size_t i = 0; i < sizeof(fields) / sizeof(fields[0]); ++i) putLittle32(data.data() + 8 + i * 4, fields[i]);
-        for (size_t i = 0; i < anchors_.size(); ++i) putLittle32(data.data() + kCacheHeaderBytes + i * 4, anchors_[i]);
+        for (size_t i = 0; i < anchorCount_; ++i) putLittle32(data.data() + kCacheHeaderBytes + i * 4, anchors_[i]);
         putLittle32(data.data() + 56, ~crc32(data.data() + kCacheHeaderBytes, data.size() - kCacheHeaderBytes));
         putLittle32(data.data() + 60, ~crc32(data.data(), 60));
         return data;
@@ -213,40 +240,68 @@ public:
 
     bool restoreIndex(Reader& index, Reader& body, const Metadata& meta, const CacheIdentity& identity,
                       const std::vector<uint8_t>& data, std::string& error) {
-        ready_ = false; anchors_.clear();
+        class View final : public Reader {
+        public:
+            explicit View(const std::vector<uint8_t>& input) : bytes(input) {}
+            const std::vector<uint8_t>& bytes;
+            uint32_t size() const override { return bytes.size(); }
+            size_t readAt(uint32_t pos, uint8_t* out, size_t count) override {
+                if (pos > bytes.size()) return 0;
+                count = std::min(count, bytes.size() - pos);
+                memcpy(out, bytes.data() + pos, count); return count;
+            }
+        } view(data);
+        return restoreIndex(index, body, meta, identity, view, error);
+    }
+
+    bool restoreIndex(Reader& index, Reader& body, const Metadata& meta, const CacheIdentity& identity,
+                      Reader& data, std::string& error) {
+        ready_ = false; anchors_.reset(); anchorCount_ = 0;
         index_ = &index; body_ = &body; meta_ = meta; cached_.reset(index_);
         if (!meta.count || meta.count > 1000000 || index.size() != meta.indexBytes || data.size() < kCacheHeaderBytes) {
             error = "Invalid cached index size / metadata"; return false;
         }
         const uint32_t count = (meta.count + kStride - 1) / kStride;
-        if (data.size() != kCacheHeaderBytes + size_t(count) * 4 || memcmp(data.data(), "CPDIDX01", 8) != 0) {
+        uint8_t header[kCacheHeaderBytes];
+        if (data.size() != kCacheHeaderBytes + size_t(count) * 4 || data.readAt(0, header, sizeof(header)) != sizeof(header) ||
+            memcmp(header, "CPDIDX01", 8) != 0) {
             error = "Invalid cached index format / length"; return false;
         }
-        if (little32(data.data() + 60) != ~crc32(data.data(), 60) ||
-            little32(data.data() + 56) != ~crc32(data.data() + kCacheHeaderBytes, data.size() - kCacheHeaderBytes)) {
-            error = "Cached index checksum mismatch"; return false;
+        if (little32(header + 60) != ~crc32(header, 60)) {
+            error = "Cached index header checksum mismatch"; return false;
         }
         const uint32_t expected[] = {1, kStride, meta.count, index.size(), body.size(), count,
             identity.ifoCrc, identity.ifoModified, identity.indexModified, identity.bodyModified, identity.indexSampleCrc, identity.bodySampleCrc};
         for (size_t i = 0; i < sizeof(expected) / sizeof(expected[0]); ++i) {
-            if (little32(data.data() + 8 + i * 4) != expected[i]) {
+            if (little32(header + 8 + i * 4) != expected[i]) {
                 error = "Cached index belongs to a different dictionary"; return false;
             }
         }
-        uint32_t previous = 0;
-        for (uint32_t i = 0; i < count; ++i) {
-            const uint32_t position = little32(data.data() + kCacheHeaderBytes + i * 4);
-            if ((i == 0 && position != 0) || (i && position <= previous) || position >= index.size()) {
-                error = "Invalid cached index anchor"; return false;
+        if (!anchors_.allocate(count)) { error = "Not enough RAM for cached index blocks"; return false; }
+        uint32_t crc = 0xffffffffu;
+        uint8_t bytes[1024];
+        for (uint32_t first = 0; first < count;) {
+            const size_t length = std::min(sizeof(bytes), size_t(count - first) * 4);
+            if (data.readAt(kCacheHeaderBytes + first * 4, bytes, length) != length) {
+                error = "Cached index read failed"; return false;
             }
-            previous = position;
+            crc = crc32(bytes, length, crc);
+            for (size_t i = 0; i < length / 4; ++i) {
+                const uint32_t position = little32(bytes + i * 4);
+                const uint32_t anchor = first + i;
+                if ((anchor == 0 && position != 0) || (anchor && position <= anchors_[anchor - 1]) || position >= index.size()) {
+                    error = "Invalid cached index anchor"; return false;
+                }
+                anchors_[anchor] = position;
+            }
+            first += length / 4;
         }
-        // Spot-check a bounded number of anchors against the source index.
+        if (little32(header + 56) != ~crc) { error = "Cached index checksum mismatch"; return false; }
         std::string previousWord;
         uint32_t previousAnchor = UINT32_MAX;
         for (uint32_t i = 0; i < std::min(count, 8u); ++i) {
             const uint32_t anchor = count <= 8 ? i : uint64_t(count - 1) * i / 7;
-            const uint32_t position = little32(data.data() + kCacheHeaderBytes + anchor * 4);
+            const uint32_t position = anchors_[anchor];
             uint8_t preceding = 0;
             Entry entry;
             if ((position && index.readAt(position - 9, &preceding, 1) != 1) ||
@@ -256,22 +311,21 @@ public:
             }
             previousWord = entry.word; previousAnchor = anchor;
         }
-        anchors_.reserve(count);
-        for (uint32_t i = 0; i < count; ++i) anchors_.push_back(little32(data.data() + kCacheHeaderBytes + i * 4));
+        anchorCount_ = count;
         ready_ = true;
         return true;
     }
 
     bool ready() const { return ready_; }
     uint32_t count() const { return meta_.count; }
-    size_t indexRamBytes() const { return anchors_.size() * sizeof(uint32_t); }
+    size_t indexRamBytes() const { return anchorCount_ * sizeof(uint32_t); }
 
     std::vector<Entry> suggest(const std::string& query, size_t limit = 5) {
         std::vector<Entry> result;
         if (!ready_ || !limit) return result;
         // Start at the anchor immediately BEFORE the first >= query, preserving
         // case-insensitive duplicates that can straddle an anchor boundary.
-        size_t lo = 0, hi = anchors_.size();
+        size_t lo = 0, hi = anchorCount_;
         Entry item;
         while (lo < hi) {
             size_t mid = lo + (hi - lo) / 2;
@@ -329,7 +383,8 @@ private:
     Reader* body_ = nullptr;
     BufferedReader cached_;
     Metadata meta_;
-    std::vector<uint32_t> anchors_;
+    AnchorStorage anchors_;
+    size_t anchorCount_ = 0;
     bool ready_ = false;
 };
 

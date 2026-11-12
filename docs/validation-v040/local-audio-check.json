@@ -1,0 +1,9 @@
+{
+  "apple": "AUDIO local=/audio/en/apple.mp3\nAUDIO start word=apple format=mp3 rate=48000 channels=1 path=/audio/en/apple.mp3\nAUDIO state=playing word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/apple.mp3 heap=39672\nCMD_DONE\r\n",
+  "apple_done": "AUDIO state=idle word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=92740\nCMD_DONE\r\n",
+  "hello": "AUDIO local=/audio/en/hello.wav\nAUDIO start word=hello format=wav rate=48000 channels=1 path=/audio/en/hello.wav\nAUDIO state=playing word=hello wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/hello.wav heap=88372\nCMD_DONE\r\n",
+  "hello_done": "AUDIO state=idle word=hello wifi_configured=0 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=92740\nCMD_DONE\r\n",
+  "lookup": "LOOKUP: apple\n/'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\r\nCMD_DONE\r\n",
+  "missing": "AUDIO state=idle word=qwertyunknown wifi_configured=0 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=92416\nCMD_DONE\r\n",
+  "chinese": "AUDIO state=idle word= wifi_configured=0 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=92416\nCMD_DONE\r\n"
+}
