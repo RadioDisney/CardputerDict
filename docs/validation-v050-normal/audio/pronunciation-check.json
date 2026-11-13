@@ -1,0 +1,38 @@
+{
+  "initial": "CardputerDict 0.5.0 board=14 heap=54904 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1548\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=27478 max_interval_us=1071\nkeyboard driver=gpio-matrix fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer board_id=14 keyboard=gpio-matrix audio=NS4168 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=0 es8311=0\nsd frequency=10000000 dirs_ready=1 card_type=2 size_mb=480\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\ncache path=/dictionaries/cedict.ifo mode=cache load_ms=295 saved=0\ncache path=/dictionaries/pinyin.ifo mode=cache load_ms=287 saved=0\nnote=\nAUDIO state=idle word= wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=54904\nCMD_DONE\r\n",
+  "mp3": {
+    "start": "AUDIO local=/audio/en/apple.mp3\nAUDIO start word=apple format=mp3 rate=48000 channels=1 path=/audio/en/apple.mp3\nAUDIO state=playing word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/apple.mp3 heap=86020\nCMD_DONE",
+    "done": "INDEX /dictionaries/ecdict.ifo mode=cache ms=393 bytes=48228 saved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nAUDIO state=idle word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=87044\nCMD_DONE"
+  },
+  "wav": {
+    "start": "AUDIO local=/audio/en/hello.wav\nAUDIO start word=hello format=wav rate=48000 channels=1 path=/audio/en/hello.wav\nAUDIO state=playing word=hello wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/hello.wav heap=77604\nCMD_DONE",
+    "done": "AUDIO state=idle word=hello wifi_configured=0 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=89980\nCMD_DONE"
+  },
+  "with_all_indexes": "CardputerDict 0.5.0 board=14 heap=54532 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en\ndisplay=240x135 rotation=0\nboot_ready_ms=1548\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=31631 max_interval_us=1081\nkeyboard driver=gpio-matrix fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer board_id=14 keyboard=gpio-matrix audio=NS4168 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=0 es8311=0\nsd frequency=10000000 dirs_ready=1 card_type=2 size_mb=480\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=2 start=0 selected=0 count=0\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=393 saved=0\ncache path=/dictionaries/cedict.ifo mode=cache load_ms=294 saved=0\ncache path=/dictionaries/pinyin.ifo mode=cache load_ms=287 saved=0\nnote=\nAUDIO state=idle word=hello wifi_configured=0 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=54532\nCMD_DONE\r\n",
+  "repeated": [
+    {
+      "start": "AUDIO local=/audio/en/apple.mp3\nAUDIO start word=apple format=mp3 rate=48000 channels=1 path=/audio/en/apple.mp3\nAUDIO state=playing word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/apple.mp3 heap=85932\nCMD_DONE",
+      "done": "INDEX /dictionaries/cedict.ifo mode=cache ms=294 bytes=12480 saved=0\nLoaded CC-CEDICT 汉英: 198650 headwords, 12416 sparse index bytes\nAUDIO state=idle word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=125764\nCMD_DONE"
+    },
+    {
+      "start": "AUDIO local=/audio/en/hello.wav\nAUDIO start word=hello format=wav rate=48000 channels=1 path=/audio/en/hello.wav\nAUDIO state=playing word=hello wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/hello.wav heap=99244\nCMD_DONE",
+      "done": "AUDIO state=idle word=hello wifi_configured=0 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=111612\nCMD_DONE"
+    },
+    {
+      "start": "AUDIO local=/audio/en/apple.mp3\nAUDIO start word=apple format=mp3 rate=48000 channels=1 path=/audio/en/apple.mp3\nAUDIO state=playing word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/apple.mp3 heap=50540\nCMD_DONE",
+      "done": "AUDIO state=idle word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=111612\nCMD_DONE"
+    },
+    {
+      "start": "AUDIO local=/audio/en/hello.wav\nAUDIO start word=hello format=wav rate=48000 channels=1 path=/audio/en/hello.wav\nAUDIO state=playing word=hello wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/hello.wav heap=99244\nCMD_DONE",
+      "done": "AUDIO state=idle word=hello wifi_configured=0 wifi_connected=0 volume=96 frames=60096 peak=25265 path=/audio/en/hello.wav heap=111612\nCMD_DONE"
+    },
+    {
+      "start": "AUDIO local=/audio/en/apple.mp3\nAUDIO start word=apple format=mp3 rate=48000 channels=1 path=/audio/en/apple.mp3\nAUDIO state=playing word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path=/audio/en/apple.mp3 heap=50540\nCMD_DONE",
+      "done": "AUDIO state=idle word=apple wifi_configured=0 wifi_connected=0 volume=96 frames=56208 peak=24918 path=/audio/en/apple.mp3 heap=111612\nCMD_DONE"
+    }
+  ],
+  "cancel": "CMD_DONE\r\n",
+  "invalid_word": "AUDIO state=idle word= wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=54616\nCMD_DONE\r\n",
+  "final": "CardputerDict 0.5.0 board=14 heap=54616 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1548\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=41600 max_interval_us=1081\nkeyboard driver=gpio-matrix fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer board_id=14 keyboard=gpio-matrix audio=NS4168 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=0 es8311=0\nsd frequency=10000000 dirs_ready=1 card_type=2 size_mb=480\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=393 saved=0\ncache path=/dictionaries/cedict.ifo mode=cache load_ms=294 saved=0\ncache path=/dictionaries/pinyin.ifo mode=cache load_ms=287 saved=0\nnote=\nAUDIO state=idle word= wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=54616\nCMD_DONE\r\n",
+  "passed": true
+}

@@ -1,0 +1,21 @@
+{
+  "words": {
+    "hello": "STATE direction=en-zh query=hello composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "letterll": "STATE direction=en-zh query=letterll composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "bookkeeper": "STATE direction=en-zh query=bookkeeper composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "mississippi": "STATE direction=en-zh query=mississippi composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "eeeeeeee": "STATE direction=en-zh query=eeeeeeee composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  "initial": "ved=0\nLoaded ECDICT 英汉词典: 770611 headwords, 48164 sparse index bytes\nBOOT_READY ms=1453\nCardputerDict ready. Commands: status, lookup apple, reload\r\nCardputerDict 0.5.0 board=14 heap=95292 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1453\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=22638 max_interval_us=1005\nkeyboard driver=gpio-matrix fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer board_id=14 keyboard=gpio-matrix audio=NS4168 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=0 es8311=0\nsd frequency=10000000 dirs_ready=1 card_type=2 size_mb=480\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=223 frames=0 peak=0 path= heap=95292\nCMD_DONE\r\n",
+  "backspace": {
+    "state": "STATE direction=en-zh query=abcdefghijklm composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n",
+    "deleted_in_1200ms": 7,
+    "release_stopped": true
+  },
+  "circular_pages": {
+    "previous_from_first": "STATE direction=en-zh query=apple composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nTEXT: /'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\nDEFINITION page=1 pages=2\nCMD_DONE\r\n",
+    "next_from_last": "STATE direction=en-zh query=apple composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nTEXT: /'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\nDEFINITION page=0 pages=2\nCMD_DONE\r\n"
+  },
+  "final": "CardputerDict 0.5.0 board=14 heap=94932 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1453\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=27848 max_interval_us=1071\nkeyboard driver=gpio-matrix fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer board_id=14 keyboard=gpio-matrix audio=NS4168 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=0 es8311=0\nsd frequency=10000000 dirs_ready=1 card_type=2 size_mb=480\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=391 saved=0\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=223 frames=0 peak=0 path= heap=94932\nCMD_DONE\r\n",
+  "passed": true
+}

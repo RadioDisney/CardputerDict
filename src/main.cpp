@@ -10,6 +10,7 @@
 #include "pronunciation.h"
 #include "key_repeat.h"
 #include "keyboard_input.h"
+#include "device_hardware.h"
 #include <esp_heap_caps.h>
 
 namespace {
@@ -63,6 +64,8 @@ std::string sourceName = "内置演示", statusMessage;
 std::vector<std::string> lines;
 int selected = 0, definitionPage = 0, activeDictionary = -1;
 bool sdMounted = false, usingSd = false, pinyin = false, dirty = true;
+uint32_t sdFrequency = 0;
+bool sdDirectoriesReady = false;
 KeyRepeat backspaceRepeat;
 bool searchPending = false;
 uint32_t searchAt = 0;
@@ -300,14 +303,20 @@ void scanSd(bool rebuild = false) {
     englishLexicon.reset(); chineseLexicon.reset(); otherLexicon.reset(); pinyinLexicon.reset();
     pinyin = false;
     dictionaryPaths.clear(); activeDictionary = -1;
-    if (sdMounted) SD.end();
-    SPI.begin(40, 39, 14, 12);
+    pronunciation::stop();
+    SD.end();
+    SPI.end();
+    const auto& hardware = device::profile();
+    pinMode(hardware.sdCs, OUTPUT); digitalWrite(hardware.sdCs, HIGH);
+    SPI.begin(hardware.sdSck, hardware.sdMiso, hardware.sdMosi, hardware.sdCs);
     sdMounted = false;
+    sdDirectoriesReady = false; sdFrequency = 0;
     // Some cards need an extra initialization attempt after a USB warm reset.
     for (const uint32_t frequency : {10000000u, 4000000u, 1000000u}) {
         delay(100);
-        if (SD.begin(12, SPI, frequency, "/sd", 16) && SD.cardType() != CARD_NONE) {
+        if (SD.begin(hardware.sdCs, SPI, frequency, "/sd", 16, false) && SD.cardType() != CARD_NONE) {
             sdMounted = true;
+            sdFrequency = frequency;
             break;
         }
         SD.end();
@@ -315,6 +324,12 @@ void scanSd(bool rebuild = false) {
     if (!sdMounted) {
         sourceName = "内置演示"; statusMessage = "SD 未就绪，使用演示词库";
     } else {
+        sdDirectoriesReady = true;
+        for (const char* path : {"/dictionaries", "/licenses", "/audio", "/audio/en", "/audio/cache", "/audio/cache/en"}) {
+            if (!SD.exists(path) && !SD.mkdir(path)) sdDirectoriesReady = false;
+        }
+        Serial.printf("SD mounted frequency=%lu card_type=%u size_mb=%llu dirs_ready=%d\n", (unsigned long)sdFrequency,
+            unsigned(SD.cardType()), (unsigned long long)(SD.cardSize() / (1024 * 1024)), sdDirectoriesReady);
         File dir = SD.open("/dictionaries");
         if (dir && dir.isDirectory()) {
             for (File item = dir.openNextFile(); item; item = dir.openNextFile()) {
@@ -839,11 +854,14 @@ void serialCommand() {
                 Serial.println("ERR audio busy; use audio stop");
             else if (command.rfind("put ", 0) == 0 || command.rfind("putaudio ", 0) == 0) receiveFile(command);
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.4.2 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                Serial.printf("CardputerDict 0.5.0 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
                               (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
                 Serial.printf("boot_ready_ms=%lu\n", (unsigned long)bootReadyMs);
                 keyboard::diagnostics();
+                device::diagnostics();
+                Serial.printf("sd frequency=%lu dirs_ready=%d card_type=%u size_mb=%llu\n", (unsigned long)sdFrequency, sdDirectoriesReady,
+                    unsigned(sdMounted ? SD.cardType() : CARD_NONE), (unsigned long long)(sdMounted ? SD.cardSize() / (1024 * 1024) : 0));
                 Serial.println("spacing half=1 full=2");
                 Serial.printf("definition font_height=%d line_gap=%d line_step=%d rows=%d\n", bodyFontHeight(), kDefinitionLineGap, definitionLineStep(), definitionRows());
                 Serial.printf("results line_step=%d rows=%d start=%d selected=%d count=%u\n", kWordListLineStep, wordListRows(), wordListStart(), selected, unsigned(usingSd ? matches.size() : demoMatches.size()));
@@ -949,7 +967,14 @@ void setup() {
     cfg.serial_baudrate = 115200;
     cfg.internal_spk = true;
     cfg.internal_mic = false;
-    M5Cardputer.begin(cfg, true);
+    // M5Unified/M5GFX detects the physical board before the keyboard driver is selected.
+    M5Cardputer.begin(cfg, false);
+    if (!device::detect()) {
+        screen().setRotation(0); screen().fillScreen(BG); screen().setFont(&kBodyFont); screen().setTextColor(FG);
+        printScreenAt("Unsupported hardware", 5, 30);
+        return;
+    }
+    if (device::profile().model == device::Model::Cardputer) M5Cardputer.Keyboard.begin();
     pronunciation::begin();
     pronunciation::setPrepareNetwork(prepareAudioNetwork);
     screen().setRotation(0);  // M5GFX includes Cardputer's panel rotation offset.
@@ -963,6 +988,9 @@ void setup() {
         printScreenAt("for screen buffer", 6, 50);
         return;
     }
+    screen().fillScreen(BG); screen().setFont(&kBodyFont); screen().setTextColor(FG);
+    printScreenAt(device::profile().name, 6, 30);
+    printScreenAt("正在初始化 SD 卡", 6, 55);
     scanSd();
     query = "apple";
     refreshMatches();

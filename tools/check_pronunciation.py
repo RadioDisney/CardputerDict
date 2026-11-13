@@ -48,7 +48,7 @@ def main():
     result = {}
     with open_device(args.port, timeout=0.1) as port:
         result["initial"] = command(port, "status")
-        assert "CardputerDict 0.4.0" in result["initial"]
+        assert "CardputerDict 0." in result["initial"]
         result["mp3"] = check_playback(port, "apple")
         result["wav"] = check_playback(port, "hello")
         # Force all three indexes into RAM, then exercise the low-memory path.

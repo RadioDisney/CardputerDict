@@ -1,0 +1,22 @@
+{
+  "version": "0.4.2",
+  "name": "CardputerDict 中英离线词典",
+  "device": "Cardputer",
+  "chip": "esp32s3",
+  "flash_size": "8MB",
+  "flash_offset": "0x0",
+  "source_commit": "e77918149e850b87c9912632df98276839c7eece",
+  "file": "CardputerDict-0.4.2-M5Burner.bin",
+  "bytes": 2138816,
+  "sha256": "3ca64b058f471cb7674408b321ae6e8c7861c4ca2f97b93bd95f08a17ca3d60b",
+  "cover": "CardputerDict-0.4.2-UI-cover.png",
+  "cover_source": "Four unmodified current device framebuffer screenshots, enlarged by integer scaling",
+  "contains_wifi_credentials": false,
+  "status": "pending-review",
+  "visibility": "public",
+  "uploaded": true,
+  "submitted_date": "2026-11-12",
+  "versions_url": "https://burner.m5stack.com/developer/firmware/2120468585455984642/versions",
+  "public_description_status": "pending-review",
+  "previous_version": "0.3.0 published"
+}

@@ -1,0 +1,71 @@
+[
+  {
+    "file": "cedict.dict",
+    "bytes": 11849016,
+    "fnv1a": "4e2c3a47",
+    "seconds": 66.61,
+    "result": "DONE verified"
+  },
+  {
+    "file": "cedict.idx",
+    "bytes": 3403119,
+    "fnv1a": "3bea3e48",
+    "seconds": 19.19,
+    "result": "DONE verified"
+  },
+  {
+    "file": "CC-CEDICT-LICENSE.txt",
+    "bytes": 20138,
+    "fnv1a": "1e564596",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "CC-CEDICT-NOTICE.txt",
+    "bytes": 768,
+    "fnv1a": "438569b1",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "DejaVuSans-LICENSE.txt",
+    "bytes": 4974,
+    "fnv1a": "b169726d",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "ECDICT-LICENSE.txt",
+    "bytes": 1063,
+    "fnv1a": "2b774e8a",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "cedict-source.json",
+    "bytes": 229,
+    "fnv1a": "af1f76cf",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "ipa-font-source.txt",
+    "bytes": 185,
+    "fnv1a": "aa040a31",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "pinyin-data-LICENSE.txt",
+    "bytes": 1076,
+    "fnv1a": "13ac3155",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "sources.json",
+    "bytes": 498,
+    "fnv1a": "2713687c",
+    "result": "SKIP verified identical"
+  },
+  {
+    "file": "cedict.ifo",
+    "bytes": 121,
+    "fnv1a": "47083448",
+    "seconds": 0.07,
+    "result": "DONE verified"
+  }
+]

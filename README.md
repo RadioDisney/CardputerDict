@@ -1,6 +1,6 @@
-# CardputerDict 0.4.2
+# CardputerDict 0.5.0
 
-普通 M5Stack Cardputer 上的离线英汉 / 汉英词典，支持整词全拼和逐字中文输入。使用 PlatformIO、Arduino、M5Cardputer、M5GFX；无需联网或 PSRAM。
+M5Stack Cardputer / Cardputer-Adv 通用的离线英汉 / 汉英词典，支持整词全拼和逐字中文输入。使用 PlatformIO、Arduino、M5Cardputer、M5GFX；无需联网或 PSRAM。
 
 屏幕保持 `setRotation(0)`，配合当前 M5GFX 的 Cardputer 面板偏移得到 **240×135 横屏**，画布读取实际屏幕尺寸。
 
@@ -11,6 +11,10 @@
 备选词条列表的行步进由 15 增加到 17 像素。普通状态同屏显示 4 条，拼音输入时显示 2 条；上下选择自动滚动，全部匹配词条仍可选。
 
 释义翻页支持首尾循环：末页继续下一页回首页，首页继续上一页跳末页。适用于 Space、Enter、Fn 翻页组合；单页词条始终停留在该页。
+
+## 双机型自动识别（0.5.0）
+
+同一份固件在启动时识别普通 Cardputer 或 Cardputer-Adv，选择 GPIO / TCA8418 键盘及 NS4168 / ES8311 音频驱动。SD 引脚相同（SCK40、MISO39、MOSI14、CS12）；初始化依次重试 10/4/1 MHz，并创建缺少的词库和音频目录，不会自动格式化 SD。首次装入完整词库时构建 `.cidx`，后续直接加载缓存。
 
 ## 英语朗读（0.4.0）
 
@@ -79,7 +83,7 @@ python3 tools/check_pronunciation.py /dev/cu.usbmodemXXXX --online-word pronunci
 
 退格支持按住连续删除：首次按下立即删除一次，约 450ms 后开始每 125ms 重复，松手停止。适用于查询、拼音和 WiFi 输入框；中文按完整 UTF-8 字符删除。Fn+退格保持单次清空，其他修饰键组合不自动重复。
 
-键盘采用独立 1ms 扫描任务，按键变化经 2ms 去抖后入队；界面刷新和查词期间也持续捕获松手/重按，同键快速连按无需等待界面刷新结束。长按退格时延后匹配词条刷新，松手后自动更新。
+键盘采用独立 1ms 扫描任务，普通版 GPIO 矩阵经 2ms 去抖，Adv 使用 TCA8418 硬件去抖并完整读取 FIFO 事件；界面刷新和查词期间也持续捕获松手/重按，同键快速连按无需等待界面刷新结束。长按退格时延后匹配词条刷新，松手后自动更新。
 
 ## 使用
 
@@ -150,7 +154,7 @@ pio run -e cardputer -t upload --upload-port /dev/cu.usbmodemXXXX
 
 使用数据 USB 线。无法识别串口时，按住 G0 插入 USB 后松开。项目使用 8 MB Flash、6 MB 应用分区；不配置 OTA。
 
-合并固件 `CardputerDict-v0.4.2-factory.bin` 写入地址为 **0x0**。PlatformIO 构建目录的 `firmware.bin` 是单独应用，地址为 **0x10000**。设备已经烧录时无需再次操作。
+现有设备升级优先使用 `CardputerDict-0.5.0-app.bin`（与构建目录 `firmware.bin` 相同）写入 **0x10000**，或使用 PlatformIO upload，以保留 WiFi / 音量等 NVS 设置。完整合并固件 `CardputerDict-0.5.0-merged.bin` 写入 **0x0**，用于新机部署，会重置 NVS；请先备份已有配置。
 
 原机完整 8 MB Flash 保存在 `backups/cardputer-before-20261110.bin`，恢复步骤见 `docs/RECOVERY.md`。
 

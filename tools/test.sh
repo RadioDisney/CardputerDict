@@ -16,6 +16,8 @@ c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include 
 build/tests/ime_layout_test
 c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/core_test.cpp -o build/tests/core_test
 build/tests/core_test sdcard/dictionaries/demo
+c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/device_profile_test.cpp -o build/tests/device_profile_test
+build/tests/device_profile_test
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 if [ -f sdcard/dictionaries/ecdict.ifo ]; then
     build/tests/core_test sdcard/dictionaries/ecdict

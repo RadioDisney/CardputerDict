@@ -44,5 +44,5 @@ if __name__ == "__main__":
     parser.add_argument("port"); parser.add_argument("word"); parser.add_argument("file", type=Path)
     args = parser.parse_args()
     with open_device(args.port, timeout=0.1) as port:
-        status = command(port, "status"); assert "CardputerDict 0.4.0" in status, status
+        status = command(port, "status"); assert "CardputerDict 0." in status, status
         print(json.dumps(install(port, args.word, args.file), ensure_ascii=False, indent=2))

@@ -1,0 +1,58 @@
+CardputerDict 0.5.0 board=24 heap=53716 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh
+display=240x135 rotation=0
+boot_ready_ms=1627
+keyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=152193 max_interval_us=3685
+keyboard driver=TCA8418 fifo_events=0 fifo_overflows=0 i2c_errors=0
+DEVICE model=Cardputer-Adv board_id=24 keyboard=TCA8418 audio=ES8311 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=1 es8311=1
+sd frequency=10000000 dirs_ready=1 card_type=2 size_mb=480
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=4 start=0 selected=0 count=5
+lexicons en=770611 zh=198650 ime=85610
+cache path=/dictionaries/ecdict.ifo mode=cache load_ms=414 saved=0
+cache path=/dictionaries/cedict.ifo mode=cache load_ms=332 saved=0
+cache path=/dictionaries/pinyin.ifo mode=cache load_ms=296 saved=0
+note=
+AUDIO state=idle word= wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=53716
+CMD_DONE
+
+CardputerDict 0.5.0 board=24 heap=53716 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en
+display=240x135 rotation=0
+boot_ready_ms=1627
+keyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=152345 max_interval_us=3685
+keyboard driver=TCA8418 fifo_events=0 fifo_overflows=0 i2c_errors=0
+DEVICE model=Cardputer-Adv board_id=24 keyboard=TCA8418 audio=ES8311 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=1 es8311=1
+sd frequency=10000000 dirs_ready=1 card_type=2 size_mb=480
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=2 start=0 selected=0 count=0
+lexicons en=770611 zh=198650 ime=85610
+cache path=/dictionaries/ecdict.ifo mode=cache load_ms=414 saved=0
+cache path=/dictionaries/cedict.ifo mode=cache load_ms=332 saved=0
+cache path=/dictionaries/pinyin.ifo mode=cache load_ms=296 saved=0
+note=
+AUDIO state=idle word= wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=53716
+CMD_DONE
+
+CardputerDict 0.5.0 board=24 heap=53724 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en
+display=240x135 rotation=0
+boot_ready_ms=1627
+keyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=153843 max_interval_us=3685
+keyboard driver=TCA8418 fifo_events=0 fifo_overflows=0 i2c_errors=0
+DEVICE model=Cardputer-Adv board_id=24 keyboard=TCA8418 audio=ES8311 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=1 es8311=1
+sd frequency=10000000 dirs_ready=1 card_type=2 size_mb=480
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=2 start=0 selected=0 count=0
+lexicons en=770611 zh=198650 ime=85610
+cache path=/dictionaries/ecdict.ifo mode=cache load_ms=415 saved=0
+cache path=/dictionaries/cedict.ifo mode=cache load_ms=332 saved=0
+cache path=/dictionaries/pinyin.ifo mode=cache load_ms=296 saved=0
+note=
+AUDIO state=idle word= wifi_configured=0 wifi_connected=0 volume=96 frames=0 peak=0 path= heap=53724
+CMD_DONE
+
+Cached boot 1: firmware=1611 ms, host=1624 ms
+Cached boot 2: firmware=1611 ms, host=1624 ms
+Cached boot 3: firmware=1611 ms, host=1623 ms
+Startup cache benchmark passed

@@ -1,0 +1,14 @@
+{
+  "date": "2026-11-13",
+  "device": "Cardputer-Adv",
+  "confirmed_by": "user",
+  "result": "声音、方向和按键都正常",
+  "checks": [
+    "speaker apple/hello",
+    "screen orientation",
+    "consecutive same keys",
+    "held backspace",
+    "Tab direction switch",
+    "pinyin selection and dictionary lookup"
+  ]
+}

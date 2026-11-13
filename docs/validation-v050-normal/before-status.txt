@@ -1,0 +1,12 @@
+CardputerDict 0.4.2 board=14 heap=95332 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh
+display=240x135 rotation=0
+boot_ready_ms=1724
+keyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=76820 max_interval_us=1000
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=4 start=0 selected=0 count=5
+lexicons en=770611 zh=0 ime=0
+cache path=/dictionaries/ecdict.ifo mode=cache load_ms=390 saved=0
+note=
+AUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=223 frames=0 peak=0 path= heap=95332
+CMD_DONE
