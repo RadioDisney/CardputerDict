@@ -1,0 +1,122 @@
+[
+  {
+    "frame": "00.png",
+    "action": "start en-zh search",
+    "duration_ms": 450,
+    "state": "STATE direction=en-zh query= composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "01.png",
+    "action": "type a",
+    "duration_ms": 300,
+    "state": "STATE direction=en-zh query=a composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "02.png",
+    "action": "type p",
+    "duration_ms": 300,
+    "state": "STATE direction=en-zh query=ap composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "03.png",
+    "action": "type p",
+    "duration_ms": 300,
+    "state": "STATE direction=en-zh query=app composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "04.png",
+    "action": "type l",
+    "duration_ms": 300,
+    "state": "STATE direction=en-zh query=appl composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "05.png",
+    "action": "type e",
+    "duration_ms": 1500,
+    "state": "STATE direction=en-zh query=apple composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "06.png",
+    "action": "press enter",
+    "duration_ms": 2200,
+    "state": "STATE direction=en-zh query=apple composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nTEXT: /'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\nDEFINITION page=0 pages=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "07.png",
+    "action": "press space",
+    "duration_ms": 1800,
+    "state": "STATE direction=en-zh query=apple composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nTEXT: /'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\nDEFINITION page=1 pages=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "08.png",
+    "action": "press tab",
+    "duration_ms": 450,
+    "state": "STATE direction=zh-en query= composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "09.png",
+    "action": "type p",
+    "duration_ms": 300,
+    "state": "STATE direction=zh-en query= composition=p page=0 candidate_page=0 visible=5 candidate_start=0 selected=0 list_start=0 list_rows=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "10.png",
+    "action": "type i",
+    "duration_ms": 300,
+    "state": "STATE direction=zh-en query= composition=pi page=0 candidate_page=0 visible=8 candidate_start=0 selected=0 list_start=0 list_rows=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "11.png",
+    "action": "type n",
+    "duration_ms": 300,
+    "state": "STATE direction=zh-en query= composition=pin page=0 candidate_page=0 visible=8 candidate_start=0 selected=0 list_start=0 list_rows=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "12.png",
+    "action": "type g",
+    "duration_ms": 300,
+    "state": "STATE direction=zh-en query= composition=ping page=0 candidate_page=0 visible=8 candidate_start=0 selected=0 list_start=0 list_rows=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "13.png",
+    "action": "type g",
+    "duration_ms": 300,
+    "state": "STATE direction=zh-en query= composition=pingg page=0 candidate_page=0 visible=5 candidate_start=0 selected=0 list_start=0 list_rows=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "14.png",
+    "action": "type u",
+    "duration_ms": 300,
+    "state": "STATE direction=zh-en query= composition=pinggu page=0 candidate_page=0 visible=3 candidate_start=0 selected=0 list_start=0 list_rows=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "15.png",
+    "action": "type o",
+    "duration_ms": 2000,
+    "state": "STATE direction=zh-en query= composition=pingguo page=0 candidate_page=0 visible=3 candidate_start=0 selected=0 list_start=0 list_rows=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "16.png",
+    "action": "press 1",
+    "duration_ms": 1400,
+    "state": "STATE direction=zh-en query=苹果 composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "17.png",
+    "action": "press enter",
+    "duration_ms": 2300,
+    "state": "STATE direction=zh-en query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nTEXT: [Ping2 guo3]\nApple (American tech company)\n\n[ping2 guo3]\napple\nCL:個|个[ge4],顆|颗[ke1]\nDEFINITION page=0 pages=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "18.png",
+    "action": "press space",
+    "duration_ms": 1800,
+    "state": "STATE direction=zh-en query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nTEXT: [Ping2 guo3]\nApple (American tech company)\n\n[ping2 guo3]\napple\nCL:個|个[ge4],顆|颗[ke1]\nDEFINITION page=1 pages=2\nCMD_DONE\r\n"
+  },
+  {
+    "frame": "19.png",
+    "action": "press tab",
+    "duration_ms": 400,
+    "state": "STATE direction=en-zh query= composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4\nCMD_DONE\r\n"
+  }
+]
