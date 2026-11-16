@@ -1,4 +1,4 @@
-# CardputerDict 0.5.0
+# CardputerDict 0.5.1
 
 M5Stack Cardputer / Cardputer-Adv 通用的离线英汉 / 汉英词典，支持整词全拼和逐字中文输入。使用 PlatformIO、Arduino、M5Cardputer、M5GFX；无需联网或 PSRAM。
 
@@ -11,6 +11,10 @@ M5Stack Cardputer / Cardputer-Adv 通用的离线英汉 / 汉英词典，支持�
 备选词条列表的行步进由 15 增加到 17 像素。普通状态同屏显示 4 条，拼音输入时显示 2 条；上下选择自动滚动，全部匹配词条仍可选。
 
 释义翻页支持首尾循环：末页继续下一页回首页，首页继续上一页跳末页。适用于 Space、Enter、Fn 翻页组合；单页词条始终停留在该页。
+
+## 繁体字补字（0.5.1）
+
+12/14/16px 中文字体优先使用原简体字库，缺字时从繁体字库回退补齐。释义、查询标题、词条列表和拼音候选都可显示“個、顆、蘋”等字；正文继续使用原 IPA 字体，行高和字距保持原设置。
 
 ## 双机型自动识别（0.5.0）
 
@@ -154,7 +158,7 @@ pio run -e cardputer -t upload --upload-port /dev/cu.usbmodemXXXX
 
 使用数据 USB 线。无法识别串口时，按住 G0 插入 USB 后松开。项目使用 8 MB Flash、6 MB 应用分区；不配置 OTA。
 
-现有设备升级优先使用 `CardputerDict-0.5.0-app.bin`（与构建目录 `firmware.bin` 相同）写入 **0x10000**，或使用 PlatformIO upload，以保留 WiFi / 音量等 NVS 设置。完整合并固件 `CardputerDict-0.5.0-merged.bin` 写入 **0x0**，用于新机部署，会重置 NVS；请先备份已有配置。
+现有设备升级优先使用 `CardputerDict-0.5.1-app.bin`（与构建目录 `firmware.bin` 相同）写入 **0x10000**，或使用 PlatformIO upload，以保留 WiFi / 音量等 NVS 设置。完整合并固件 `CardputerDict-0.5.1-merged.bin` 写入 **0x0**，用于新机部署，会重置 NVS；请先备份已有配置。
 
 原机完整 8 MB Flash 保存在 `backups/cardputer-before-20261110.bin`，恢复步骤见 `docs/RECOVERY.md`。
 

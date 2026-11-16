@@ -1,0 +1,36 @@
+{
+  "name": "CardputerDict",
+  "version": "0.5.1",
+  "devices": [
+    "Cardputer",
+    "Cardputer-Adv"
+  ],
+  "change": "Chinese font fallback: CN first, Traditional Chinese fallback at 12/14/16px; IPA preserved",
+  "files": {
+    "CardputerDict-0.5.1-app.bin": {
+      "bytes": 3536784,
+      "sha256": "9d75bf474ca63b683d2e0e271ba52641aa36755bab560ba5431494cee26704c0",
+      "flash_address": "0x10000",
+      "preserves_nvs": true
+    },
+    "CardputerDict-0.5.1-merged.bin": {
+      "bytes": 3602320,
+      "sha256": "353499eb70c8ddde7fd81f333d7f6bb36e5ecf3f1bfdbd6aa97b59690a53b08d",
+      "flash_address": "0x0",
+      "preserves_nvs": false
+    }
+  },
+  "verified": {
+    "host_tests": "8 native tests with ASan/UBSan + 14 Python cases",
+    "hardware": [
+      "adv",
+      "normal"
+    ],
+    "apple_changed_pixels_per_device": 141,
+    "apple_changes_only_in_two_glyph_cells": true,
+    "tesla_framebuffer_unchanged": true,
+    "wifi_and_volume_preserved": true,
+    "bilingual_and_ime_tests": true
+  },
+  "m5burner_uploaded": false
+}

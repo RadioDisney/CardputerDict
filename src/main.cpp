@@ -155,7 +155,7 @@ void updateCandidates() {
             return std::find(completions.begin(), completions.end(), query + candidate) != completions.end();
         });
     }
-    canvas.setFont(&fonts::efontCN_16);
+    canvas.setFont(&kCjk16);
     composer.reflow([](const std::string& text) { return textWidth(text); });
 }
 
@@ -616,7 +616,7 @@ void handleKeyEvent(const keyboard::Event& event) {
 void render() {
     canvas.fillSprite(BG);
     canvas.setTextWrap(false);
-    canvas.setFont(&fonts::efontCN_12);
+    canvas.setFont(&kCjk12);
     canvas.fillRect(0, 0, 240, 18, PANEL);
     printAt("CARDPUTER DICT", 5, 2, ACCENT);
     const std::string direction = pinyin ? "汉英" : "英汉";
@@ -630,7 +630,7 @@ void render() {
         printAt(fitEnd(pronunciation::message(), 228), 5, 49);
         printAt("Fn+P 或 ` 停止", 5, 77, MUTED);
         printAt("Fn+= / Fn+- 调整音量", 5, 96, MUTED);
-        canvas.setFont(&fonts::efontCN_12);
+        canvas.setFont(&kCjk12);
         printAt("音量 " + std::to_string(pronunciation::volume() * 100 / 255) + "%", 5, 121, MUTED);
     } else if (page == Page::Wifi) {
         canvas.setFont(&kBodyFont);
@@ -638,7 +638,7 @@ void render() {
         printAt((wifiField == 0 ? "> " : "  ") + std::string("SSID: ") + fitTail(wifiSsid, 150), 5, 43);
         printAt((wifiField == 1 ? "> " : "  ") + std::string("密码: ") + fitTail(std::string(wifiPassword.size(), '*'), 150), 5, 62);
         printAt("Tab换字段 Enter下一步/保存", 5, 82, MUTED);
-        canvas.setFont(&fonts::efontCN_12);
+        canvas.setFont(&kCjk12);
         printAt("联网获取将发送所选英文词", 5, 102, MUTED);
         printAt(wifiError.empty() ? "`取消，空密码连接开放网络" : fitEnd(wifiError, 230), 5, 120, wifiError.empty() ? MUTED : FG);
     } else if (page == Page::Help) {
@@ -646,7 +646,7 @@ void render() {
         const char* help[] = {"Tab 切换  Enter 查词", "Fn+; / Fn+. 上下/翻页", "空格首选  1-9 选词", "[ / ] 翻候选  v=ü", "Fn+D 换词库  Fn+R 重载", "Fn+退格 清空  ` 返回", "Fn+P 朗读  Fn+W WiFi"};
         for (size_t i = 0; i < 7; ++i) printAt(fitEnd(help[i], 232), 4, 23 + int(i) * 16);
     } else if (page == Page::Definition) {
-        canvas.setFont(&fonts::efontCN_16);
+        canvas.setFont(&kCjk16);
         printAt(fitEnd(headword, 228), 5, 21, ACCENT);
         canvas.drawFastHLine(4, 40, 232, SELECT);
         canvas.setFont(&kBodyFont);
@@ -655,11 +655,11 @@ void render() {
             const size_t i = size_t(definitionPage * rows + row);
             if (i < lines.size()) printAt(lines[i], 5, kDefinitionTop + row * definitionLineStep());
         }
-        canvas.setFont(&fonts::efontCN_12);
+        canvas.setFont(&kCjk12);
         const std::string footer = std::to_string(definitionPage + 1) + "/" + std::to_string(definitionPageCount()) + " Space下一页 Fn+P朗读";
         printAt(footer, 5, 121, MUTED);
     } else {
-        canvas.setFont(&fonts::efontCN_16);
+        canvas.setFont(&kCjk16);
         printAt(query.empty() ? (pinyin ? "输入拼音…" : "输入单词…") : fitTail(query, 214), 5, 21, query.empty() ? MUTED : FG);
         canvas.drawFastHLine(4, 40, 232, SELECT);
         canvas.setFont(&kBodyFont);
@@ -678,10 +678,10 @@ void render() {
         } else if (count == 0) printAt("未找到；可换词库或缩短输入", 5, 45, MUTED);
         if (!composition.empty()) {
             canvas.fillRect(0, 88, 240, 33, PANEL);
-            canvas.setFont(&fonts::efontCN_12);
+            canvas.setFont(&kCjk12);
             printAt(fitTail(composition, 170), 4, 88, ACCENT);
             printAt(std::to_string(candidatePage + 1) + "/" + std::to_string(composer.pageCount()), 196, 88, ACCENT);
-            canvas.setFont(&fonts::efontCN_16);
+            canvas.setFont(&kCjk16);
             for (size_t i = 0; i < composer.visibleCount(); ++i) {
                 const size_t index = composer.pageStart() + i;
                 if (index >= candidates.size() || index >= composer.placements.size()) break;
@@ -698,13 +698,13 @@ void render() {
             }
             if (candidates.empty()) printAt("无候选，请检查拼音", 4, 102);
         }
-        canvas.setFont(&fonts::efontCN_12);
+        canvas.setFont(&kCjk12);
         const std::string footer = usingSd ? "SD " + std::to_string(dictionary().count()) + "词  Fn+H帮助" : "演示 " + std::to_string(kDemoCount) + "词  Fn+H帮助";
         printAt(footer, 4, 121, MUTED);
     }
     if (!pronunciation::busy() && page != Page::Wifi && !pronunciation::message().empty() && int32_t(audioNoticeUntil - millis()) > 0) {
         canvas.fillRect(0, 118, 240, 17, PANEL);
-        canvas.setFont(&fonts::efontCN_12);
+        canvas.setFont(&kCjk12);
         printAt(fitEnd(pronunciation::message(), 230), 4, 120, ACCENT);
     }
     canvas.pushSprite(0, 0);
@@ -854,7 +854,7 @@ void serialCommand() {
                 Serial.println("ERR audio busy; use audio stop");
             else if (command.rfind("put ", 0) == 0 || command.rfind("putaudio ", 0) == 0) receiveFile(command);
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.5.0 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                Serial.printf("CardputerDict 0.5.1 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
                               (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
                 Serial.printf("boot_ready_ms=%lu\n", (unsigned long)bootReadyMs);
