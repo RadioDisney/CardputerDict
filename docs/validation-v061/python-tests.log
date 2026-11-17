@@ -1,0 +1,26 @@
+test_key_names (test_audio_tools.AudioToolsTests.test_key_names) ... ok
+test_pack_preserves_existing_files (test_audio_tools.AudioToolsTests.test_pack_preserves_existing_files) ... ok
+test_invalid_line_is_not_silently_skipped (test_cedict.CedictTests.test_invalid_line_is_not_silently_skipped) ... ok
+test_normalization (test_cedict.CedictTests.test_normalization) ... ok
+test_polyphony_variants_and_phrase_candidates (test_cedict.CedictTests.test_polyphony_variants_and_phrase_candidates) ... ok
+test_fallback_uses_same_line_height (test_cjk_font.CjkCoverageTests.test_fallback_uses_same_line_height) ... ok
+test_missing_traditional_glyphs_have_real_fallback (test_cjk_font.CjkCoverageTests.test_missing_traditional_glyphs_have_real_fallback) ... ok
+test_simplified_and_mixed_words_remain_covered (test_cjk_font.CjkCoverageTests.test_simplified_and_mixed_words_remain_covered) ... ok
+test_existing_ipa_remains_available (test_ipa_font.PhoneticFontTests.test_existing_ipa_remains_available) ... ok
+test_generated_ranges_and_bitmap_bounds (test_ipa_font.PhoneticFontTests.test_generated_ranges_and_bitmap_bounds) ... ok
+test_tesla_cyrillic_schwa_is_visible (test_ipa_font.PhoneticFontTests.test_tesla_cyrillic_schwa_is_visible) ... ok
+test_ecdict_forms (test_tools.DictionaryToolsTest.test_ecdict_forms) ... ok
+test_reject_invalid (test_tools.DictionaryToolsTest.test_reject_invalid) ... ok
+test_stardict_order_offsets_unicode (test_tools.DictionaryToolsTest.test_stardict_order_offsets_unicode) ... ok
+test_cleaner_keeps_body_tables_and_variants_without_control_markup (test_wikipedia.WikiConversionTests.test_cleaner_keeps_body_tables_and_variants_without_control_markup) ... ok
+test_full_xml_namespace_filter_long_body_and_empty_articles (test_wikipedia.WikiConversionTests.test_full_xml_namespace_filter_long_body_and_empty_articles) ... ok
+test_card_copy_preserves_old_pack_and_verifies_content (test_wikipedia.WikiInstallTests.test_card_copy_preserves_old_pack_and_verifies_content) ... ok
+test_usb_fnv_checksum_matches_standard_vector (test_wikipedia.WikiInstallTests.test_usb_fnv_checksum_matches_standard_vector) ... ok
+test_chunk_boundaries_alias_priority_redirects_and_integrity (test_wikipedia.WikiPackTests.test_chunk_boundaries_alias_priority_redirects_and_integrity) ... ok
+test_failed_or_empty_build_does_not_publish_header (test_wikipedia.WikiPackTests.test_failed_or_empty_build_does_not_publish_header) ... ok
+test_uncommitted_tail_is_removed_and_catalog_resumes_safely (test_wikipedia.WikiResumeTests.test_uncommitted_tail_is_removed_and_catalog_resumes_safely) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 1.713s
+
+OK

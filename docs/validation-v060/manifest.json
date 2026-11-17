@@ -1,0 +1,276 @@
+{
+  "name": "CardputerDict",
+  "version": "0.6.0",
+  "devices": [
+    "Cardputer",
+    "Cardputer-Adv"
+  ],
+  "feature": "Chinese Wikipedia offline title lookup and bounded full-article reading",
+  "firmware": {
+    "CardputerDict-0.6.0-app.bin": {
+      "bytes": 3551440,
+      "sha256": "97b44691a883f1fb2124d5fd423a447e1212ed83d8e06544bee21c55b3beab9d",
+      "flash_address": "0x10000",
+      "preserves_nvs": true
+    },
+    "CardputerDict-0.6.0-merged.bin": {
+      "bytes": 3616976,
+      "sha256": "756321ea05f9f44fafa53e7a6ec1dd2fca581a994c93e13b204995a1a6e02de7",
+      "flash_address": "0x0",
+      "preserves_nvs": false
+    }
+  },
+  "wikipedia": {
+    "format": "CardputerWiki/1",
+    "articles": 1563854,
+    "redirect_pages": 1461311,
+    "unresolved_redirects": 474,
+    "search_entries": 4863298,
+    "title_bytes": 87218278,
+    "text_bytes": 4964649705,
+    "chunk_bytes": 134217728,
+    "files": [
+      {
+        "file": "text00000.bin",
+        "bytes": 134217728,
+        "sha256": "456deb077b0fe94fe1a3a699124b9c5077310e7282a86db7f983069ae66f51d2"
+      },
+      {
+        "file": "text00001.bin",
+        "bytes": 134217728,
+        "sha256": "5e2b4a72a266864721c166c648587a24859e3095108fcd9f44d1c52007d43e00"
+      },
+      {
+        "file": "text00002.bin",
+        "bytes": 134217728,
+        "sha256": "7382bdebfe77a14a6ff02331cf7bb9468d750b2999e256c035dbaae1c73068f3"
+      },
+      {
+        "file": "text00003.bin",
+        "bytes": 134217728,
+        "sha256": "d3bfe29307c307f118cd4e966354fb07cec9fbe29091adde23689c99ab47969c"
+      },
+      {
+        "file": "text00004.bin",
+        "bytes": 134217728,
+        "sha256": "c1a922b72192fa1cfd8dbadf6d5e26401656e290527111b605b07fe5e5387510"
+      },
+      {
+        "file": "text00005.bin",
+        "bytes": 134217728,
+        "sha256": "555d124c45a3d93cae08732fc570e22ef1c857a75e60d1f830258938dfb9c522"
+      },
+      {
+        "file": "text00006.bin",
+        "bytes": 134217728,
+        "sha256": "60077b9690c1bfa6b1b9bce3ae8d06b7f79e8270dd94f6f0593dd1835a01395f"
+      },
+      {
+        "file": "text00007.bin",
+        "bytes": 134217728,
+        "sha256": "35a8d301f7a67fa15a0d65800ed3dcc148021b028fd8f02cce3643d1a6aa31d2"
+      },
+      {
+        "file": "text00008.bin",
+        "bytes": 134217728,
+        "sha256": "d297b529067c9fad60f343ffec1babbad9a0fb775f2fc81cfe460df64977d797"
+      },
+      {
+        "file": "text00009.bin",
+        "bytes": 134217728,
+        "sha256": "220314af4c495da1a05b5f04b9bcfdd5e06f5753f9c5efbf83ce0e997eedf2c0"
+      },
+      {
+        "file": "text00010.bin",
+        "bytes": 134217728,
+        "sha256": "a929100f1d3790560915ca77bc86a9b22394d62bddf330f5e681a72a4ae0c0d9"
+      },
+      {
+        "file": "text00011.bin",
+        "bytes": 134217728,
+        "sha256": "cbba7a3d50b14abe2369acd74d6e876eacf80d785a9eb6e4671f7d3bb43a0d8b"
+      },
+      {
+        "file": "text00012.bin",
+        "bytes": 134217728,
+        "sha256": "a21b93e089e31e9fc5307ab65173031013c34ee46fcbef13958919a97de7a483"
+      },
+      {
+        "file": "text00013.bin",
+        "bytes": 134217728,
+        "sha256": "2dd632803588278d51b21b635346d26d65ca05c94cdb4ed1ce40821194ba68da"
+      },
+      {
+        "file": "text00014.bin",
+        "bytes": 134217728,
+        "sha256": "460dba2478e9e215a3ba3a262766246e93d8f1448d39630e7528c8283aa5b310"
+      },
+      {
+        "file": "text00015.bin",
+        "bytes": 134217728,
+        "sha256": "d684fab3aea5e14b353c095b68f74ff175ad982e5dba53be1174769942d70ec1"
+      },
+      {
+        "file": "text00016.bin",
+        "bytes": 134217728,
+        "sha256": "a50ab3bd21a4b0d35afb5a23e1351373f85d4bb7db043ba9e03d2893f3b4c0d5"
+      },
+      {
+        "file": "text00017.bin",
+        "bytes": 134217728,
+        "sha256": "0a7f51be70aef38d17e93322e50a9dd7e1aa662ee5032862ea6cbcede1153f77"
+      },
+      {
+        "file": "text00018.bin",
+        "bytes": 134217728,
+        "sha256": "394d1f16adee89cf4185dd3b4206ce82e27753227a65b8c524692a8a7b02ca91"
+      },
+      {
+        "file": "text00019.bin",
+        "bytes": 134217728,
+        "sha256": "a2db057cf9640b726cff35ce4cbb70af92d41e4ba4ab92164fcd2bf6a0c77d50"
+      },
+      {
+        "file": "text00020.bin",
+        "bytes": 134217728,
+        "sha256": "740d6f1fe7537aad696cf4e797c8855604f8bc078a9480fe6325e45453a24da6"
+      },
+      {
+        "file": "text00021.bin",
+        "bytes": 134217728,
+        "sha256": "5f5323b9a9a0905c7a129f3c9a7403e7deca0c451d5bd4b70fc1f332d8a78cd9"
+      },
+      {
+        "file": "text00022.bin",
+        "bytes": 134217728,
+        "sha256": "70e1a5030da12584e3d284f4b19c290c81063e3127cb463118abdd5ae96d3460"
+      },
+      {
+        "file": "text00023.bin",
+        "bytes": 134217728,
+        "sha256": "491b91de3a71921d27245bf1bad0fed29c89a70da89d3b698ade88591e3f81f8"
+      },
+      {
+        "file": "text00024.bin",
+        "bytes": 134217728,
+        "sha256": "b9c8eb00a082d262a5ad03e16c14c9a5c3bed7a164e5dd4661909e1db8b3c905"
+      },
+      {
+        "file": "text00025.bin",
+        "bytes": 134217728,
+        "sha256": "109d85d7890587e7bf70f8a7c43e8b03d0ce6e1a593d55cdd0987bf760c8f9df"
+      },
+      {
+        "file": "text00026.bin",
+        "bytes": 134217728,
+        "sha256": "717d422a65437de714dda1ddc4c8354fe68679f716e652f324ba8b332e87cad8"
+      },
+      {
+        "file": "text00027.bin",
+        "bytes": 134217728,
+        "sha256": "bc999b22152a438b5dc76dd723e9bf4538356f478dbdbb5ccc5ea56267cb9f30"
+      },
+      {
+        "file": "text00028.bin",
+        "bytes": 134217728,
+        "sha256": "5c98c429ca00daccb78969a60c49930578fad0a6979ca4d95a80d68897f15b83"
+      },
+      {
+        "file": "text00029.bin",
+        "bytes": 134217728,
+        "sha256": "203564d6b6c7496f9712def126e3815989c5d397c38c59b582252fd7d37a2963"
+      },
+      {
+        "file": "text00030.bin",
+        "bytes": 134217728,
+        "sha256": "751958d4cc69ff115c3b9a72cddc8c6d5ee398848cf5fd764e674d5d60eeabe2"
+      },
+      {
+        "file": "text00031.bin",
+        "bytes": 134217728,
+        "sha256": "0cb844b776dcc00ca042dec89bf3a908e774ed9a059db83773d4137827b373c8"
+      },
+      {
+        "file": "text00032.bin",
+        "bytes": 134217728,
+        "sha256": "0b93998feb59f927631c7a28b7e0d98c235fb491d80d37896f1d8f61cd9a42dc"
+      },
+      {
+        "file": "text00033.bin",
+        "bytes": 134217728,
+        "sha256": "81cfe6add0c95fc49ba30f705f788e73660af1cfe94bbcd350ceeb6dec0edcb6"
+      },
+      {
+        "file": "text00034.bin",
+        "bytes": 134217728,
+        "sha256": "f2b33c39fc9094bf26836f7db196b58ea7c7646cfbf7c946d6011b7f29d72841"
+      },
+      {
+        "file": "text00035.bin",
+        "bytes": 134217728,
+        "sha256": "acded1b3b45982240798489ddfded5779025568b2eecad04eba1402dfa1f68a7"
+      },
+      {
+        "file": "text00036.bin",
+        "bytes": 132811497,
+        "sha256": "8a06aabd64cdc8d0656929edd0f670a81c522138be72574c838b4a2e280f8f10"
+      },
+      {
+        "file": "index.wix",
+        "bytes": 97265960,
+        "sha256": "5db6392ed34a5ab9000ec1d9ac9ab874316ed3135cb9e6ae58eeed7b77c01e5d"
+      },
+      {
+        "file": "titles.wit",
+        "bytes": 87218278,
+        "sha256": "e8e3e1a02e9d5ca8cdbb441f95cfa2af715b98dd3095a7d7a7e0d3775ee30d15"
+      }
+    ],
+    "source": {
+      "file": "zhwiki-20261101-pages-articles-multistream.xml.bz2",
+      "url": "https://dumps.wikimedia.org/zhwiki/20261101/zhwiki-20261101-pages-articles-multistream.xml.bz2",
+      "sha1": "f7aaacab0f741bab3024e47eca1bbee8c8f625ee",
+      "verified": true,
+      "partial": false,
+      "empty_text_pages_in_this_run": 40,
+      "resumed": true
+    },
+    "license": "CC-BY-SA-4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "changes": "Unillustrated plain text derived from namespace-0 Wikipedia articles; formatting normalized and Chinese converted to simplified; original, simplified and traditional title aliases indexed."
+  },
+  "sd_bundle": "/Users/huxunxun/Documents/ChatGPT/Cardpute/outputs/CardputerDict-0.6.0-SD",
+  "device_tests": "both models passed marked 94-article test pack; physical Fn+E / pinyin / paging confirmed by user",
+  "full_pack_cpp_engine_test": true,
+  "full_card_hardware_test": {
+    "passed": true,
+    "model": "Cardputer-Adv",
+    "card": "SG 8GB FAT32",
+    "capacity_mb": 7618,
+    "articles": 1563854,
+    "search_entries": 4863298,
+    "actual_high_offset": 4315621553,
+    "lookup_ms": {
+      "苹果": 609,
+      "维基百科": 600
+    },
+    "initial_source": "Wikipedia already active from user navigation after reboot",
+    "new_controls_observed": "[Tab] encyclopedia header and separate input indicator; Wikipedia active in initial status"
+  },
+  "m5burner_uploaded": false,
+  "controls": {
+    "next_dictionary": "Tab",
+    "previous_dictionary": "Shift+Tab",
+    "input_method": "Ctrl+Space",
+    "removed_switch_bindings": [
+      "Fn+E",
+      "Fn+D"
+    ]
+  },
+  "dictionary_cycle_tests": "native tests passed for every discovered SD source, reverse direction, unknown current source and demo fallback",
+  "small_card_tab_recheck": "additional two-device command not executed after user rejection; no claim of that recheck",
+  "dataset_status": {
+    "Cardputer-Adv": "complete pack installed on 8GB SG card and hardware-tested",
+    "Cardputer": "marked 94-article test pack remains on original small card; same final firmware installed"
+  }
+}

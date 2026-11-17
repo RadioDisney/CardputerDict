@@ -1,0 +1,134 @@
+{
+  "release": "v0.6.4",
+  "repository": "RadioDisney/CardputerDict",
+  "wikipedia_snapshot": "20261101",
+  "sd_filesystem": "FAT32",
+  "minimum_card_gb": 8,
+  "recommended_card_gb": [
+    16,
+    32
+  ],
+  "unpacked_bytes": 5213952708,
+  "assets": [
+    {
+      "name": "CardputerDict-0.6.4-SD-dictionaries.zip",
+      "bytes": 25183024,
+      "sha256": "64046df4727a433bb6cb986e32ca1c5098179e4e18a4ea56fda5c46087e71780",
+      "kind": "dictionaries",
+      "files": [
+        "licenses/sources.json",
+        "licenses/DejaVuSans-LICENSE.txt",
+        "licenses/CC-CEDICT-NOTICE.txt",
+        "licenses/CC-CEDICT-LICENSE.txt",
+        "licenses/ECDICT-LICENSE.txt",
+        "licenses/cedict-source.json",
+        "licenses/ipa-font-source.txt",
+        "licenses/pinyin-data-LICENSE.txt",
+        "audio/README.txt",
+        "dictionaries/pinyin.idx",
+        "dictionaries/ecdict.idx",
+        "dictionaries/pinyin.dict",
+        "dictionaries/ecdict.dict",
+        "dictionaries/cedict.dict",
+        "dictionaries/ecdict.ifo",
+        "dictionaries/pinyin.ifo",
+        "dictionaries/cedict.ifo",
+        "dictionaries/cedict.idx"
+      ]
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-1-of-5.zip",
+      "bytes": 446349648,
+      "sha256": "3f852cdbdfd70eb24701ecf975af06fbfa47d925f61fbf5a305ce85e638381fe",
+      "kind": "wikipedia",
+      "files": [
+        "wikipedia/text00000.bin",
+        "wikipedia/text00001.bin",
+        "wikipedia/text00002.bin",
+        "wikipedia/text00003.bin",
+        "wikipedia/text00004.bin",
+        "wikipedia/text00005.bin",
+        "wikipedia/text00006.bin",
+        "wikipedia/text00007.bin"
+      ]
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-2-of-5.zip",
+      "bytes": 386848369,
+      "sha256": "b0e923ef7c0088a6be5758a488e6a05ec91598883fcc6030961036a707517887",
+      "kind": "wikipedia",
+      "files": [
+        "wikipedia/text00008.bin",
+        "wikipedia/text00009.bin",
+        "wikipedia/text00010.bin",
+        "wikipedia/text00011.bin",
+        "wikipedia/text00012.bin",
+        "wikipedia/text00013.bin",
+        "wikipedia/text00014.bin",
+        "wikipedia/text00015.bin"
+      ]
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-3-of-5.zip",
+      "bytes": 392630287,
+      "sha256": "519579defcbc9e7baf083f929f7d18acadb03aac2ae5b5ff7851c31977a62e47",
+      "kind": "wikipedia",
+      "files": [
+        "wikipedia/text00016.bin",
+        "wikipedia/text00017.bin",
+        "wikipedia/text00018.bin",
+        "wikipedia/text00019.bin",
+        "wikipedia/text00020.bin",
+        "wikipedia/text00021.bin",
+        "wikipedia/text00022.bin",
+        "wikipedia/text00023.bin"
+      ]
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-4-of-5.zip",
+      "bytes": 398643148,
+      "sha256": "4e13b34b49ed3257e0bdb1898c8174a7363c2d8aed55554106369a2fc3a47152",
+      "kind": "wikipedia",
+      "files": [
+        "wikipedia/text00024.bin",
+        "wikipedia/text00025.bin",
+        "wikipedia/text00026.bin",
+        "wikipedia/text00027.bin",
+        "wikipedia/text00028.bin",
+        "wikipedia/text00029.bin",
+        "wikipedia/text00030.bin",
+        "wikipedia/text00031.bin"
+      ]
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-5-of-5.zip",
+      "bytes": 312759432,
+      "sha256": "9cc34d180e60e53f57d6078c52891c6f1e86b78bc0b3de4df488f163439c8101",
+      "kind": "wikipedia",
+      "files": [
+        "wikipedia/text00032.bin",
+        "wikipedia/text00033.bin",
+        "wikipedia/text00034.bin",
+        "wikipedia/text00035.bin",
+        "wikipedia/text00036.bin",
+        "wikipedia/index.wix",
+        "wikipedia/titles.wit",
+        "wikipedia/LICENSE.txt",
+        "wikipedia/manifest.json",
+        "wikipedia/wiki.wki"
+      ]
+    },
+    {
+      "name": "CardputerDict-0.6.4-app.bin",
+      "bytes": 3553776,
+      "sha256": "e51ac46e52fb6aaae58cc954b9a45bcc51e47b7d388576c6b65e92ebb53c06c1",
+      "kind": "firmware"
+    },
+    {
+      "name": "CardputerDict-0.6.4-merged.bin",
+      "bytes": 3619312,
+      "sha256": "346240b38be5bfbeaf8180f7b885a5d844c700a665dcab90d9cc62ce4b386b7e",
+      "kind": "firmware"
+    }
+  ]
+}

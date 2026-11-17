@@ -18,6 +18,12 @@ c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include 
 build/tests/core_test sdcard/dictionaries/demo
 c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/device_profile_test.cpp -o build/tests/device_profile_test
 build/tests/device_profile_test
+c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/wiki_core_test.cpp -o build/tests/wiki_core_test
+build/tests/wiki_core_test
+c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/dictionary_sources_test.cpp -o build/tests/dictionary_sources_test
+build/tests/dictionary_sources_test
+c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/navigation_keys_test.cpp -o build/tests/navigation_keys_test
+build/tests/navigation_keys_test
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 if [ -f sdcard/dictionaries/ecdict.ifo ]; then
     build/tests/core_test sdcard/dictionaries/ecdict

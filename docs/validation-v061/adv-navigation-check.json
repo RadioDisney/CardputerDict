@@ -1,0 +1,49 @@
+{
+  "initial": "CardputerDict 0.6.1 board=24 heap=93196 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1885\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=134036 max_interval_us=1009\nkeyboard driver=TCA8418 fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer-Adv board_id=24 keyboard=TCA8418 audio=ES8311 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=1 es8311=1\nsd frequency=10000000 dirs_ready=1 card_type=3 size_mb=7618\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=389 saved=0\nWIKI mode=0 loaded=0 sample=0 entries=0 text_bytes=0 input=latin\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=255 frames=0 peak=0 path= heap=93196\nCMD_DONE\r\n",
+  "raw_scanner_directions": [
+    "STATE direction=en-zh query=apple composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=1 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nCMD_DONE\r\n",
+    "STATE direction=en-zh query=apple composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=2 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nCMD_DONE\r\n",
+    "STATE direction=en-zh query=apple composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=1 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nCMD_DONE\r\n",
+    "STATE direction=en-zh query=apple composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=2 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nCMD_DONE\r\n",
+    "STATE direction=en-zh query=apple composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=1 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nCMD_DONE\r\n"
+  ],
+  "punctuation": "STATE direction=en-zh query=;.,/:><? composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nCMD_DONE\r\n",
+  "dictionary_apple": [
+    "STATE direction=en-zh query=apple composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nTEXT: /'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\nDEFINITION page=1 pages=2\nCMD_DONE\r\n",
+    "STATE direction=en-zh query=apple composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nTEXT: /'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\nDEFINITION page=1 pages=2\nCMD_DONE\r\n",
+    "STATE direction=en-zh query=apple composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nTEXT: /'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\nDEFINITION page=0 pages=2\nCMD_DONE\r\n",
+    "STATE direction=en-zh query=apple composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/ecdict.ifo\nMODE dictionary\nTEXT: /'æpl/\nn. 苹果, 家伙\n[医] 苹果\n\n复数: apples\nDEFINITION page=0 pages=2\nCMD_DONE\r\n"
+  ],
+  "dictionary_苹果": [
+    "STATE direction=zh-en query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE /dictionaries/cedict.ifo\nMODE dictionary\nTEXT: [Ping2 guo3]\nApple (American tech company)\n\n[ping2 guo3]\napple\nCL:個|个[ge4],顆|颗[ke1]\nDEFINITION page=1 pages=2\nCMD_DONE\r\n",
+    "STATE direction=zh-en query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE /dictionaries/cedict.ifo\nMODE dictionary\nTEXT: [Ping2 guo3]\nApple (American tech company)\n\n[ping2 guo3]\napple\nCL:個|个[ge4],顆|颗[ke1]\nDEFINITION page=1 pages=2\nCMD_DONE\r\n",
+    "STATE direction=zh-en query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE /dictionaries/cedict.ifo\nMODE dictionary\nTEXT: [Ping2 guo3]\nApple (American tech company)\n\n[ping2 guo3]\napple\nCL:個|个[ge4],顆|颗[ke1]\nDEFINITION page=0 pages=2\nCMD_DONE\r\n",
+    "STATE direction=zh-en query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE /dictionaries/cedict.ifo\nMODE dictionary\nTEXT: [Ping2 guo3]\nApple (American tech company)\n\n[ping2 guo3]\napple\nCL:個|个[ge4],顆|颗[ke1]\nDEFINITION page=0 pages=2\nCMD_DONE\r\n"
+  ],
+  "candidate_pages": {
+    "next": "STATE direction=zh-en query= composition=ping page=0 candidate_page=1 visible=8 candidate_start=8 selected=0 list_start=0 list_rows=2 input=pinyin\nSOURCE /dictionaries/cedict.ifo\nMODE dictionary\nCMD_DONE\r\n",
+    "previous": "STATE direction=zh-en query= composition=ping page=0 candidate_page=0 visible=8 candidate_start=0 selected=0 list_start=0 list_rows=2 input=pinyin\nSOURCE /dictionaries/cedict.ifo\nMODE dictionary\nCMD_DONE\r\n"
+  },
+  "wifi_editor": {
+    "start": "WIFI_EDITOR active=1 field=0 ssid_bytes=9 password_bytes=0\nCMD_DONE\r\n",
+    "typed_length_only": "WIFI_EDITOR active=1 field=1 ssid_bytes=9 password_bytes=8\nCMD_DONE\r\n",
+    "arrow_navigation": "WIFI_EDITOR active=1 field=0 ssid_bytes=9 password_bytes=8\nCMD_DONE\r\n",
+    "closed_without_saving": "WIFI_EDITOR active=0 field=0 ssid_bytes=9 password_bytes=0\nCMD_DONE\r\n"
+  },
+  "wikipedia": {
+    "first": "WIKI_READY entries=4863298 text_bytes=4964649705 chunk_bytes=134217728\nWIKI_LOOKUP: 苹果 bytes=17514\nSTATE direction=wiki query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=0 pages=0 offset=0 next=159 bytes=17514 end=0 absolute=45784743\nWIKI_LINE: 苹果（Malus domestica bn）是\nWIKI_LINE: 蔷薇科桃亚科苹果族苹果属植物\nWIKI_LINE: ，为落叶乔木，在世界上广泛种\nWIKI_LINE: 植。果实又称林檎或柰（古汉语\nCMD_DONE\r\n",
+    "next": "STATE direction=wiki query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=1 pages=0 offset=159 next=327 bytes=17514 end=0 absolute=45784743\nWIKI_LINE: 称呼），一般呈红色，但需视品\nWIKI_LINE: 种而定，含丰富矿物质和维生素\nWIKI_LINE: ，是人们最常食用的水果之一。\nWIKI_LINE: 人们根据需求的不同口感、用途\nCMD_DONE\r\n",
+    "previous": "STATE direction=wiki query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=0 pages=0 offset=0 next=159 bytes=17514 end=0 absolute=45784743\nWIKI_LINE: 苹果（Malus domestica bn）是\nWIKI_LINE: 蔷薇科桃亚科苹果族苹果属植物\nWIKI_LINE: ，为落叶乔木，在世界上广泛种\nWIKI_LINE: 植。果实又称林檎或柰（古汉语\nCMD_DONE\r\n",
+    "last": "STATE direction=wiki query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=142 pages=143 offset=17456 next=17514 bytes=17514 end=1 absolute=45784743\nWIKI_LINE: 许可：CC BY-SA 4.0\nWIKI_LINE: 纯文字整理，已转换简体。\nCMD_DONE\r\n",
+    "wrap": "STATE direction=wiki query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=0 pages=143 offset=0 next=159 bytes=17514 end=0 absolute=45784743\nWIKI_LINE: 苹果（Malus domestica bn）是\nWIKI_LINE: 蔷薇科桃亚科苹果族苹果属植物\nWIKI_LINE: ，为落叶乔木，在世界上广泛种\nWIKI_LINE: 植。果实又称林檎或柰（古汉语\nCMD_DONE\r\n"
+  },
+  "tab_sources": [
+    "/dictionaries/cedict.ifo",
+    "@wiki",
+    "/dictionaries/demo.ifo",
+    "/dictionaries/ecdict.ifo"
+  ],
+  "reverse_tab": "STATE direction=en-zh query= composition= page=0 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=latin\nSOURCE /dictionaries/demo.ifo\nMODE dictionary\nCMD_DONE\r\n",
+  "final": "CardputerDict 0.6.1 board=24 heap=45264 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1885\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=147405 max_interval_us=1434\nkeyboard driver=TCA8418 fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer-Adv board_id=24 keyboard=TCA8418 audio=ES8311 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=1 es8311=1\nsd frequency=10000000 dirs_ready=1 card_type=3 size_mb=7618\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=389 saved=0\ncache path=/dictionaries/cedict.ifo mode=cache load_ms=312 saved=0\ncache path=/dictionaries/pinyin.ifo mode=cache load_ms=299 saved=0\nWIKI mode=0 loaded=0 sample=0 entries=0 text_bytes=0 input=latin\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=255 frames=0 peak=0 path= heap=45264\nCMD_DONE\r\n",
+  "passed": true
+}

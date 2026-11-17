@@ -1,0 +1,69 @@
+{
+  "port": "/dev/cu.usbmodem414301",
+  "timings": [
+    {
+      "command": "status",
+      "ms": 3
+    },
+    {
+      "command": "wiki 苹果",
+      "ms": 609
+    },
+    {
+      "command": "status",
+      "ms": 26
+    },
+    {
+      "command": "wiki 「一带一路」专员",
+      "ms": 484
+    },
+    {
+      "command": "press previous",
+      "ms": 475
+    },
+    {
+      "command": "wiki 11世纪月食列表",
+      "ms": 414
+    },
+    {
+      "command": "press previous",
+      "ms": 4546
+    },
+    {
+      "command": "wiki 维基百科",
+      "ms": 600
+    },
+    {
+      "command": "press previous",
+      "ms": 12434
+    },
+    {
+      "command": "wiki 维基百科",
+      "ms": 615
+    },
+    {
+      "command": "press backspace",
+      "ms": 21
+    },
+    {
+      "command": "status",
+      "ms": 3
+    }
+  ],
+  "initial": "CardputerDict 0.6.0 board=24 heap=37748 sd=1 words=4863298 source=中文维基百科 direction=wiki\ndisplay=240x135 rotation=0\nboot_ready_ms=65955\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=268685 max_interval_us=1655\nkeyboard driver=TCA8418 fifo_events=102 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer-Adv board_id=24 keyboard=TCA8418 audio=ES8311 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=1 es8311=1\nsd frequency=10000000 dirs_ready=1 card_type=3 size_mb=7618\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=0\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=scan load_ms=62880 saved=1\ncache path=/dictionaries/cedict.ifo mode=scan load_ms=11658 saved=1\ncache path=/dictionaries/pinyin.ifo mode=scan load_ms=5180 saved=1\nWIKI mode=1 loaded=1 sample=0 entries=4863298 text_bytes=4964649705 input=pinyin\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=255 frames=0 peak=0 path= heap=37748\nCMD_DONE\r\n",
+  "apple": "WIKI_LOOKUP: 苹果 bytes=17514\nSTATE direction=wiki query=苹果 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=0 pages=0 offset=0 next=159 bytes=17514 end=0 absolute=45784743\nWIKI_LINE: 苹果（Malus domestica bn）是\nWIKI_LINE: 蔷薇科桃亚科苹果族苹果属植物\nWIKI_LINE: ，为落叶乔木，在世界上广泛种\nWIKI_LINE: 植。果实又称林檎或柰（古汉语\nCMD_DONE\r\n",
+  "over_4GiB": {
+    "first": "WIKI_LOOKUP: 「一带一路」专员 bytes=6081\nSTATE direction=wiki query=「一带一路」专员 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=0 pages=0 offset=0 next=103 bytes=6081 end=0 absolute=4315621553\nWIKI_LINE: post：「一带一路」专员\nWIKI_LINE: body：中华人民共和国香港特别\nWIKI_LINE: 行政区\nWIKI_LINE: insigniasize：120px\nCMD_DONE\r\n",
+    "last": "STATE direction=wiki query=「一带一路」专员 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=49 pages=50 offset=6045 next=6081 bytes=6081 end=1 absolute=4315621553\nWIKI_LINE: 纯文字整理，已转换简体。\nCMD_DONE\r\n"
+  },
+  "cross_chunk": {
+    "first": "WIKI_LOOKUP: 11世纪月食列表 bytes=49755\nSTATE direction=wiki query=11世纪月食列表 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=0 pages=0 offset=0 next=85 bytes=49755 end=0 absolute=2147470452\nWIKI_LINE: 1001年至1100年月食列表\nWIKI_LINE: \nWIKI_LINE: 1001年至1100年之间总共发生了\nWIKI_LINE: 246次月食。\nCMD_DONE\r\n",
+    "last": "STATE direction=wiki query=11世纪月食列表 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=570 pages=571 offset=49697 next=49755 bytes=49755 end=1 absolute=2147470452\nWIKI_LINE: 许可：CC BY-SA 4.0\nWIKI_LINE: 纯文字整理，已转换简体。\nCMD_DONE\r\n"
+  },
+  "long_article": {
+    "first": "WIKI_LOOKUP: 维基百科 bytes=79673\nSTATE direction=wiki query=维基百科 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=0 pages=0 offset=0 next=84 bytes=79673 end=0 absolute=4865026\nWIKI_LINE: name：维基百科\nWIKI_LINE: native_name：Wikipedia\nWIKI_LINE: native_name_lang：en\nWIKI_LINE: collapsible：yes\nCMD_DONE\r\n",
+    "last": "STATE direction=wiki query=维基百科 composition= page=1 candidate_page=0 visible=0 candidate_start=0 selected=0 list_start=0 list_rows=4 input=pinyin\nSOURCE @wiki\nMODE wikipedia\nWIKI_PAGE page=561 pages=562 offset=79577 next=79673 bytes=79673 end=1 absolute=4865026\nWIKI_LINE: 7%A7%91&oldid=95320195&actio\nWIKI_LINE: n=history\nWIKI_LINE: 许可：CC BY-SA 4.0\nWIKI_LINE: 纯文字整理，已转换简体。\nCMD_DONE\r\n"
+  },
+  "final": "CardputerDict 0.6.0 board=24 heap=37640 sd=1 words=4863298 source=中文维基百科 direction=wiki\ndisplay=240x135 rotation=0\nboot_ready_ms=65955\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=291278 max_interval_us=1655\nkeyboard driver=TCA8418 fifo_events=102 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer-Adv board_id=24 keyboard=TCA8418 audio=ES8311 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=1 es8311=1\nsd frequency=10000000 dirs_ready=1 card_type=3 size_mb=7618\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=0\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=scan load_ms=62880 saved=1\ncache path=/dictionaries/cedict.ifo mode=scan load_ms=11658 saved=1\ncache path=/dictionaries/pinyin.ifo mode=scan load_ms=5180 saved=1\nWIKI mode=1 loaded=1 sample=0 entries=4863298 text_bytes=4964649705 input=pinyin\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=255 frames=0 peak=0 path= heap=37640\nCMD_DONE\r\n",
+  "passed": true
+}

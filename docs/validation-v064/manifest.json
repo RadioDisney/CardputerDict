@@ -1,0 +1,44 @@
+{
+  "name": "CardputerDict",
+  "version": "0.6.4",
+  "source_policy": "SD-discovered StarDict dictionaries plus installed Wikipedia, not a fixed three-mode whitelist",
+  "current_sources": [
+    "英汉",
+    "汉英",
+    "百科"
+  ],
+  "internal_pinyin_preserved": true,
+  "removed_sd_files": {
+    "adv": [
+      "._demo.dict",
+      "._demo.idx",
+      "._demo.ifo",
+      "demo.cidx",
+      "demo.dict",
+      "demo.idx",
+      "demo.ifo"
+    ],
+    "normal": [
+      "demo.cidx",
+      "demo.dict",
+      "demo.idx",
+      "demo.ifo"
+    ]
+  },
+  "device_tests": "both models passed forward/reverse cycle, IME, dictionary/Wikipedia reading and arrows",
+  "firmware": {
+    "CardputerDict-0.6.4-app.bin": {
+      "bytes": 3553776,
+      "sha256": "e51ac46e52fb6aaae58cc954b9a45bcc51e47b7d388576c6b65e92ebb53c06c1",
+      "address": "0x10000",
+      "preserves_nvs": true
+    },
+    "CardputerDict-0.6.4-merged.bin": {
+      "bytes": 3619312,
+      "sha256": "346240b38be5bfbeaf8180f7b885a5d844c700a665dcab90d9cc62ce4b386b7e",
+      "address": "0x0",
+      "preserves_nvs": false
+    }
+  },
+  "m5burner_uploaded": false
+}

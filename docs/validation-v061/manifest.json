@@ -1,0 +1,42 @@
+{
+  "name": "CardputerDict",
+  "version": "0.6.1",
+  "devices": [
+    "Cardputer",
+    "Cardputer-Adv"
+  ],
+  "controls": {
+    "arrows": "direct navigation",
+    "Fn+arrows": "original punctuation ; . , /",
+    "Fn+Shift+arrows": "shifted punctuation : > < ?",
+    "Tab": "next dictionary",
+    "Shift+Tab": "previous dictionary",
+    "Ctrl+Space": "input method"
+  },
+  "firmware": {
+    "CardputerDict-0.6.1-app.bin": {
+      "bytes": 3552432,
+      "sha256": "6ceddcd0fa15c1d58e8fb521673fd3954885815888f16f36e677f22a75ed0315",
+      "address": "0x10000",
+      "preserves_nvs": true
+    },
+    "CardputerDict-0.6.1-merged.bin": {
+      "bytes": 3617968,
+      "sha256": "97b9f9fd361463fcce126de5f33aae94864c6fe7ce14c28f2cfb968cf98a7042",
+      "address": "0x0",
+      "preserves_nvs": false
+    }
+  },
+  "tests": {
+    "native": "11 ASan/UBSan executables passed",
+    "python": "21 cases passed, no skips",
+    "devices": [
+      "Adv",
+      "normal"
+    ],
+    "physical_feedback": "User confirmed both devices: direction navigation and Fn punctuation normal"
+  },
+  "sd_data_changed": false,
+  "nvs_preserved": true,
+  "m5burner_uploaded": false
+}

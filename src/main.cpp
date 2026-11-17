@@ -10,7 +10,10 @@
 #include "pronunciation.h"
 #include "key_repeat.h"
 #include "keyboard_input.h"
+#include "navigation_keys.h"
 #include "device_hardware.h"
+#include "wiki_sd.h"
+#include "dictionary_sources.h"
 #include <esp_heap_caps.h>
 
 namespace {
@@ -51,6 +54,12 @@ struct SdLexicon {
 };
 SdLexicon englishLexicon, chineseLexicon, otherLexicon, pinyinLexicon;
 SdLexicon* activeLexicon = nullptr;
+wiki::SdArchive wikiStorage;
+wiki::Pager wikiPager;
+std::vector<wiki::Entry> wikiMatches;
+bool wikiMode = false;
+std::string dictionaryMode=dictionaries::kEnglish;
+std::string wikiMessage;
 dict::StarDict& dictionary() { return activeLexicon->dictionary; }
 std::vector<std::string> dictionaryPaths;
 std::vector<dict::Entry> matches;
@@ -81,6 +90,16 @@ Page wifiReturnPage = Page::Search;
 M5GFX& screen() { return M5Cardputer.Display; }
 bool loadLexicon(SdLexicon& lexicon, const std::string& path, bool rebuild = false);
 void switchDirection(bool chinese);
+void enterWiki();
+void nextDictionary(int step=1);
+std::string sourceId() {return wikiMode ? dictionaries::kWiki : dictionaryMode;}
+
+const char* sourceDirection() {
+    const auto id=sourceId();
+    return wikiMode?"wiki":id==dictionaries::kEnglish?"en-zh":id==dictionaries::kChinese?"zh-en":pinyin?"zh-en":"en-zh";
+}
+size_t resultCount() {return wikiMode ? wikiMatches.size() : usingSd ? matches.size() : demoMatches.size();}
+std::string resultWord(size_t i) {return wikiMode ? wikiMatches[i].title : usingSd ? matches[i].word : std::string(kDemo[demoMatches[i]].word);}
 void render();
 
 void printAt(const std::string& text, int x, int y, uint16_t color = FG) {
@@ -106,11 +125,11 @@ std::string fitTail(std::string text, int width) {
     return text;
 }
 
-void paintProgress(uint32_t done, uint32_t total) {
+void paintProgress(uint32_t done, uint32_t total, const char* label="正在建立词库索引") {
     screen().setFont(&kBodyFont);
     screen().setTextColor(FG, BG);
     screen().fillScreen(BG);
-    printScreenAt("正在建立词库索引", 8, 30);
+    printScreenAt(label, 8, 30);
     printScreenAt(std::to_string(done) + " / " + std::to_string(total), 8, 55);
     screen().drawRect(8, 85, 224, 8, MUTED);
     screen().fillRect(9, 86, total ? uint64_t(done) * 222 / total : 0, 6, ACCENT);
@@ -145,9 +164,9 @@ void updateCandidates() {
         for (size_t pos = 0; pos < chars.size(); pos += dict::utf8Length(uint8_t(chars[pos])))
             ime::addUnique(candidates, chars.substr(pos, dict::utf8Length(uint8_t(chars[pos]))));
     }
-    if (!query.empty() && chineseLexicon.loaded) {
+    if (!query.empty() && !wikiMode && usingSd && activeLexicon) {
         std::vector<std::string> completions;
-        for (const auto& entry : chineseLexicon.dictionary.suggest(query, 32)) {
+        for (const auto& entry : dictionary().suggest(query, 32)) {
             if (!dict::startsWith(entry.word, query)) break;
             completions.push_back(entry.word);
         }
@@ -161,9 +180,11 @@ void updateCandidates() {
 
 void refreshMatches() {
     selected = 0;
-    matches.clear(); demoMatches.clear();
+    matches.clear(); demoMatches.clear(); wikiMatches.clear();
     if (query.empty()) { searchPending = false; dirty = true; return; }
-    if (usingSd) matches = dictionary().suggest(query, kRows);
+    if (wikiMode) {
+        if (wikiStorage.archive.loaded() && !wikiStorage.archive.suggest(query, wikiMatches, kRows)) wikiMessage="百科索引读取失败，Fn+R重载";
+    } else if (usingSd) matches = dictionary().suggest(query, kRows);
     else {
         for (size_t i = 0; i < kDemoCount && demoMatches.size() < kRows; ++i)
             if (dict::compare(kDemo[i].word, query) >= 0) demoMatches.push_back(i);
@@ -275,7 +296,7 @@ bool loadDictionary(const std::string& path, bool rebuild = false) {
     SdLexicon* slot = path == "/dictionaries/ecdict.ifo" ? &englishLexicon :
                       path == "/dictionaries/cedict.ifo" ? &chineseLexicon : &otherLexicon;
     if (!loadLexicon(*slot, path, rebuild)) return false;
-    activeLexicon = slot;
+    activeLexicon = slot;dictionaryMode=path;
     sourceName = slot->meta.name;
     usingSd = true; statusMessage.clear();
     const auto found = std::find(dictionaryPaths.begin(), dictionaryPaths.end(), path);
@@ -284,7 +305,12 @@ bool loadDictionary(const std::string& path, bool rebuild = false) {
 }
 
 void switchDirection(bool chinese) {
+    if (!wikiMode) dictionaryMode=chinese?dictionaries::kChinese:dictionaries::kEnglish;
     pinyin = chinese;
+    if (wikiMode) {
+        if (chinese && sdMounted && SD.exists("/dictionaries/pinyin.ifo")) loadLexicon(pinyinLexicon,"/dictionaries/pinyin.ifo");
+        clearQuery(); return;
+    }
     const std::string path = chinese ? "/dictionaries/cedict.ifo" : "/dictionaries/ecdict.ifo";
     if (!sdMounted || !SD.exists(path.c_str()) || !loadDictionary(path)) {
         usingSd = false; activeLexicon = nullptr; activeDictionary = -1; sourceName = "内置演示";
@@ -298,10 +324,12 @@ void switchDirection(bool chinese) {
 }
 
 void scanSd(bool rebuild = false) {
+    const bool restoreWiki = wikiMode;
+    wikiMode=false;wikiStorage.close();wikiMatches.clear();
     usingSd = false;
     activeLexicon = nullptr;
     englishLexicon.reset(); chineseLexicon.reset(); otherLexicon.reset(); pinyinLexicon.reset();
-    pinyin = false;
+    pinyin = false;dictionaryMode=dictionaries::kEnglish;
     dictionaryPaths.clear(); activeDictionary = -1;
     pronunciation::stop();
     SD.end();
@@ -325,7 +353,7 @@ void scanSd(bool rebuild = false) {
         sourceName = "内置演示"; statusMessage = "SD 未就绪，使用演示词库";
     } else {
         sdDirectoriesReady = true;
-        for (const char* path : {"/dictionaries", "/licenses", "/audio", "/audio/en", "/audio/cache", "/audio/cache/en"}) {
+        for (const char* path : {"/dictionaries", "/licenses", "/audio", "/audio/en", "/audio/cache", "/audio/cache/en", "/wikipedia"}) {
             if (!SD.exists(path) && !SD.mkdir(path)) sdDirectoriesReady = false;
         }
         Serial.printf("SD mounted frequency=%lu card_type=%u size_mb=%llu dirs_ready=%d\n", (unsigned long)sdFrequency,
@@ -348,8 +376,8 @@ void scanSd(bool rebuild = false) {
         // Prefer the useful full dictionary over the bundled demonstration.
         auto preferred = std::find(dictionaryPaths.begin(), dictionaryPaths.end(), "/dictionaries/ecdict.ifo");
         if (preferred != dictionaryPaths.end()) std::rotate(dictionaryPaths.begin(), preferred, preferred + 1);
-        for (size_t i = 0; i < dictionaryPaths.size(); ++i) {
-            if (loadDictionary(dictionaryPaths[i], rebuild)) { pinyin = activeLexicon == &chineseLexicon; break; }
+        for(const auto& path:dictionaryPaths) {
+            if(loadDictionary(path,rebuild)) {pinyin=path==dictionaries::kChinese;break;}
         }
         if (!usingSd) {
             sourceName = "内置演示";
@@ -361,22 +389,31 @@ void scanSd(bool rebuild = false) {
         if (SD.exists("/dictionaries/pinyin.ifo")) loadLexicon(pinyinLexicon, "/dictionaries/pinyin.ifo", true);
     }
     clearQuery();
+    if (restoreWiki) enterWiki();
 }
 
-void nextDictionary() {
-    if (dictionaryPaths.empty()) { scanSd(); return; }
-    int next = activeDictionary + 1;
-    if (next >= int(dictionaryPaths.size())) {
-        usingSd = false; activeDictionary = -1; sourceName = "内置演示";
-        activeLexicon = nullptr; statusMessage.clear(); pinyin = false;
-    } else {
-        activeDictionary = next;
-        if (!loadDictionary(dictionaryPaths[next])) {
-            usingSd = false; sourceName = "内置演示";
-        } else pinyin = activeLexicon == &chineseLexicon;
-        if (pinyin && SD.exists("/dictionaries/pinyin.ifo")) loadLexicon(pinyinLexicon, "/dictionaries/pinyin.ifo");
-    }
+void enterWiki() {
+    pronunciation::stop();wikiMode=true;pinyin=true;wikiMessage.clear();
+    if (!sdMounted || !wikiStorage.open()) wikiMessage="未安装百科，请复制 wikipedia/";
+    if (sdMounted && SD.exists("/dictionaries/pinyin.ifo")) loadLexicon(pinyinLexicon,"/dictionaries/pinyin.ifo");
     clearQuery();
+}
+
+void nextDictionary(int step) {
+    const auto order=dictionaries::sources(dictionaryPaths,sdMounted && SD.exists("/wikipedia/wiki.wki"));
+    const auto target=dictionaries::advance(order,sourceId(),step);
+    if(target==dictionaries::kWiki) {enterWiki();return;}
+    pronunciation::stop();wikiMode=false;wikiStorage.close();wikiMessage.clear();dictionaryMode=target;
+    if(target==dictionaries::kEnglish || target==dictionaries::kChinese) {switchDirection(target==dictionaries::kChinese);return;}
+    pinyin=false;
+    if(!loadDictionary(target)) {usingSd=false;activeLexicon=nullptr;sourceName="内置演示";}
+    clearQuery();
+}
+
+void toggleInput() {
+    pinyin=!pinyin;composition.clear();candidates.clear();composer.resetLayout();page=Page::Search;
+    if(pinyin && sdMounted && SD.exists("/dictionaries/pinyin.ifo"))loadLexicon(pinyinLexicon,"/dictionaries/pinyin.ifo");
+    refreshMatches();
 }
 
 int bodyFontHeight() {
@@ -401,7 +438,7 @@ int wordListRows() {
 }
 
 int wordListStart() {
-    const int total = usingSd ? int(matches.size()) : int(demoMatches.size());
+    const int total = int(resultCount());
     const int rows = wordListRows();
     return std::max(0, std::min(selected - rows + 1, std::max(0, total - rows)));
 }
@@ -428,6 +465,36 @@ void wrapDefinition() {
 
 void openSelected() {
     if (searchPending) refreshMatches();
+    if (wikiMode) {
+        if (selected<0 || selected>=int(wikiMatches.size())) return;
+        canvas.setFont(&kBodyFont);
+        auto article=wikiMatches[selected];
+        std::string articleTitle=article.title;
+        // Pack text starts with its canonical title and a blank line. Keep the
+        // title in the header, leaving all four body rows for article content.
+        uint8_t titleBuffer[wiki::kMaxTitleBytes+2];
+        const size_t titleBytes=wikiStorage.archive.read(article,0,titleBuffer,std::min(sizeof(titleBuffer),size_t(article.length)));
+        const std::string prefix(reinterpret_cast<const char*>(titleBuffer),titleBytes);
+        const auto separator=prefix.find("\n\n");
+        if (separator!=std::string::npos && separator>0 && separator<=wiki::kMaxTitleBytes && separator+2<article.length) {
+            articleTitle=prefix.substr(0,separator);
+            canvas.setFont(&kCjk16);const bool titleFits=textWidth(articleTitle)<=228;canvas.setFont(&kBodyFont);
+            if (titleFits) {article.offset+=separator+2;article.length-=uint32_t(separator+2);}
+        }
+        const bool opened=wikiPager.open(wikiStorage.archive,article,228,definitionRows(),
+            [](const std::string& text){canvas.setFont(&kBodyFont);return textWidth(text);},
+            [](uint32_t done,uint32_t total){
+                delay(1);
+                if (keyboard::heldKeys() & keyboard::keyBit(0,0)) return false;
+                static uint32_t draw=0;
+                if (millis()-draw>=250) {paintProgress(done,total,"正在定位百科页面");draw=millis();}
+                return true;
+            });
+        if (!opened) {wikiMessage="百科正文读取失败，Fn+R重载";dirty=true;return;}
+        headword=articleTitle;definition.clear();lines.clear();wikiMessage.clear();
+        page=Page::Definition;dirty=true;
+        Serial.printf("WIKI_LOOKUP: %s bytes=%lu\n",headword.c_str(),(unsigned long)wikiPager.length());return;
+    }
     if (usingSd) {
         if (matches.empty() || selected >= int(matches.size())) return;
         const auto& entry = matches[selected];
@@ -478,6 +545,7 @@ void openWifiSettings() {
 }
 
 void pronounceSelected() {
+    if (wikiMode) return;
     if (pronunciation::busy()) { pronunciation::stop(); dirty = true; return; }
     if (page == Page::Help || page == Page::Wifi || !composition.empty()) return;
     std::string value;
@@ -492,20 +560,24 @@ void pronounceSelected() {
 }
 
 void move(int amount) {
-    if (page == Page::Definition) {
+    if (page == Page::Definition && wikiMode) {
+        if (!wikiPager.move(amount)) wikiMessage="读取失败或已取消，Fn+R重载";
+    } else if (page == Page::Definition) {
         const int pages = definitionPageCount();
         definitionPage = (definitionPage + amount % pages + pages) % pages;
     } else if (page == Page::Search) {
         if (searchPending) refreshMatches();
-        const int total = usingSd ? matches.size() : demoMatches.size();
+        const int total = int(resultCount());
         selected = std::max(0, std::min(std::max(0, total - 1), selected + amount));
     }
     dirty = true;
 }
 
-void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
+void handleKey(int x, int y, const Keyboard_Class::KeysState& physicalState) {
     const auto key = M5Cardputer.Keyboard.getKeyValue({x, y});
     const char base = key.value_first;
+    auto state=physicalState;
+    state.fn=keyboard::directionFn(base,physicalState.fn);
     if (pronunciation::busy()) {
         if (base == '`' || (state.fn && base == 'p')) pronunciation::stop();
         else if (state.fn && base == '=') pronunciation::volume(16);
@@ -513,6 +585,11 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
         dirty = true; return;
     }
     if (page == Page::Wifi) {
+        if (keyboard::isDirectionKey(base) && state.fn && !state.ctrl && !state.alt && !state.opt) {
+            if (base==';') wifiField=0;
+            else if (base=='.') wifiField=1;
+            dirty=true;return;
+        }
         if (base == '`') { wifiPassword.clear(); page = wifiReturnPage; dirty = true; return; }
         if (x == 0 && y == 1) { wifiField = 1 - wifiField; dirty = true; return; }
         auto& field = wifiField ? wifiPassword : wifiSsid;
@@ -531,23 +608,28 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& state) {
         }
         return;
     }
+    if (state.ctrl && !state.fn && !state.alt && !state.opt && base==' ') {toggleInput();return;}
     if (state.fn) {
+        if (keyboard::isDirectionKey(base)) {
+            if (state.ctrl || state.alt || state.opt) return;
+            const int amount=(base==';' || base==',')?-1:1;
+            if (page==Page::Search && !composition.empty() && (base==',' || base=='/')) {
+                composer.turnPage(amount);dirty=true;
+            } else move(amount);
+            return;
+        }
         if (base == 'h') { page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
         else if (base == 'r') scanSd(state.shift);
-        else if (base == 'd') nextDictionary();
+
         else if (base == 'p') pronounceSelected();
         else if (base == 'w') openWifiSettings();
         else if (base == '=') pronunciation::volume(16);
         else if (base == '-') pronunciation::volume(-16);
         else if (x == 13 && y == 0) clearQuery();
-        else if (base == ';') move(-1);
-        else if (base == '.') move(1);
-        else if (base == ',') move(-1);
-        else if (base == '/') move(1);
         return;
     }
     if (x == 0 && y == 1) {
-        switchDirection(!pinyin); return;
+        nextDictionary(state.shift?-1:1); return;
     }
     if (base == '`') {
         if (page != Page::Search) page = Page::Search;
@@ -619,7 +701,7 @@ void render() {
     canvas.setFont(&kCjk12);
     canvas.fillRect(0, 0, 240, 18, PANEL);
     printAt("CARDPUTER DICT", 5, 2, ACCENT);
-    const std::string direction = pinyin ? "汉英" : "英汉";
+    const std::string direction = wikiMode ? "百科" : dictionaryMode==dictionaries::kChinese ? "汉英" : dictionaryMode==dictionaries::kEnglish ? "英汉" : "词库";
     const std::string shortcut = "[Tab]";
     const int directionX = canvas.width() - 5 - textWidth(direction);
     printAt(shortcut, directionX - 5 - textWidth(shortcut), 2, MUTED);
@@ -637,13 +719,13 @@ void render() {
         printAt("WiFi设置（2.4GHz）", 5, 22, ACCENT);
         printAt((wifiField == 0 ? "> " : "  ") + std::string("SSID: ") + fitTail(wifiSsid, 150), 5, 43);
         printAt((wifiField == 1 ? "> " : "  ") + std::string("密码: ") + fitTail(std::string(wifiPassword.size(), '*'), 150), 5, 62);
-        printAt("Tab换字段 Enter下一步/保存", 5, 82, MUTED);
+        printAt("Tab/上下换字段 Enter保存", 5, 82, MUTED);
         canvas.setFont(&kCjk12);
         printAt("联网获取将发送所选英文词", 5, 102, MUTED);
         printAt(wifiError.empty() ? "`取消，空密码连接开放网络" : fitEnd(wifiError, 230), 5, 120, wifiError.empty() ? MUTED : FG);
     } else if (page == Page::Help) {
         canvas.setFont(&kBodyFont);
-        const char* help[] = {"Tab 切换  Enter 查词", "Fn+; / Fn+. 上下/翻页", "空格首选  1-9 选词", "[ / ] 翻候选  v=ü", "Fn+D 换词库  Fn+R 重载", "Fn+退格 清空  ` 返回", "Fn+P 朗读  Fn+W WiFi"};
+        const char* help[] = {"Tab词库 Shift+Tab反向", "Ctrl+Space 拼音/直接输入", "Enter查词 Space下一页", "方向键选择/翻页 Fn标点", "空格/数字选词 左右翻候选", "Fn+退格清空  ` 返回", wikiMode?"Fn+R重载  ` 返回搜索":"Fn+P朗读 Fn+W设置WiFi"};
         for (size_t i = 0; i < 7; ++i) printAt(fitEnd(help[i], 232), 4, 23 + int(i) * 16);
     } else if (page == Page::Definition) {
         canvas.setFont(&kCjk16);
@@ -653,28 +735,33 @@ void render() {
         const int rows = definitionRows();
         for (int row = 0; row < rows; ++row) {
             const size_t i = size_t(definitionPage * rows + row);
-            if (i < lines.size()) printAt(lines[i], 5, kDefinitionTop + row * definitionLineStep());
+            if (wikiMode) {
+                if (size_t(row)<wikiPager.frame().lines.size()) printAt(wikiPager.frame().lines[row],5,kDefinitionTop+row*definitionLineStep());
+            } else if (i < lines.size()) printAt(lines[i], 5, kDefinitionTop + row * definitionLineStep());
         }
         canvas.setFont(&kCjk12);
-        const std::string footer = std::to_string(definitionPage + 1) + "/" + std::to_string(definitionPageCount()) + " Space下一页 Fn+P朗读";
+        const std::string footer = wikiMode ? (std::string(wikiStorage.sample()?"试读 ":"")+std::to_string(wikiPager.page()+1)+"页 "+
+            std::to_string(uint64_t(wikiPager.frame().next)*100/wikiPager.length())+"% Space下 左上页") :
+            std::to_string(definitionPage + 1) + "/" + std::to_string(definitionPageCount()) + " Space下一页 Fn+P朗读";
         printAt(footer, 5, 121, MUTED);
     } else {
         canvas.setFont(&kCjk16);
         printAt(query.empty() ? (pinyin ? "输入拼音…" : "输入单词…") : fitTail(query, 214), 5, 21, query.empty() ? MUTED : FG);
         canvas.drawFastHLine(4, 40, 232, SELECT);
         canvas.setFont(&kBodyFont);
-        const size_t count = usingSd ? matches.size() : demoMatches.size();
+        const size_t count = resultCount();
         const size_t start = wordListStart();
         const size_t end = std::min(count, start + wordListRows());
         for (size_t index = start; index < end; ++index) {
             const int y = kWordListTop + int(index - start) * kWordListLineStep;
-            const auto word = usingSd ? matches[index].word : std::string(kDemo[demoMatches[index]].word);
+            const auto word = resultWord(index);
             if (int(index) == selected) canvas.fillRoundRect(3, y - 1, 234, 15, 2, SELECT);
             printAt(fitEnd(word, 222), 7, y);
         }
         if (query.empty()) {
             printAt(pinyin ? "全拼输入，空格或数字选词" : "输入英文后按Enter查询", 5, 45, MUTED);
-            if (pinyin) printAt("选词后按Enter查询释义", 5, 63, MUTED);
+            if (wikiMode && !wikiStorage.archive.loaded()) {canvas.fillRect(0,42,240,44,BG);printAt("未安装中文维基数据",5,45,MUTED);printAt("复制 wikipedia/ 到SD根目录",5,63,MUTED);}
+            printAt(pinyin ? (wikiMode?"Enter阅读 Ctrl+Space输入":"Enter查词 Ctrl+Space输入") : "Ctrl+Space 切换拼音输入",5,63,MUTED);
         } else if (count == 0) printAt("未找到；可换词库或缩短输入", 5, 45, MUTED);
         if (!composition.empty()) {
             canvas.fillRect(0, 88, 240, 33, PANEL);
@@ -699,10 +786,14 @@ void render() {
             if (candidates.empty()) printAt("无候选，请检查拼音", 4, 102);
         }
         canvas.setFont(&kCjk12);
-        const std::string footer = usingSd ? "SD " + std::to_string(dictionary().count()) + "词  Fn+H帮助" : "演示 " + std::to_string(kDemoCount) + "词  Fn+H帮助";
+        const std::string footer = wikiMode ? (std::string(wikiStorage.sample()?"百科测试 ":"百科 ")+std::to_string(wikiStorage.archive.loaded()?wikiStorage.archive.header().count:0)+"条 "+(pinyin?"拼音":"ABC")+" Ctrl+Space") :
+            usingSd ? "SD " + std::to_string(dictionary().count()) + "词 "+(pinyin?"拼音":"ABC")+" Fn+H" : "演示 " + std::to_string(kDemoCount) + "词 "+(pinyin?"拼音":"ABC")+" Fn+H";
         printAt(footer, 4, 121, MUTED);
     }
-    if (!pronunciation::busy() && page != Page::Wifi && !pronunciation::message().empty() && int32_t(audioNoticeUntil - millis()) > 0) {
+    if (wikiMode && !wikiMessage.empty() && page!=Page::Help && page!=Page::Wifi) {
+        canvas.fillRect(0,118,240,17,PANEL);canvas.setFont(&kCjk12);printAt(fitEnd(wikiMessage,232),4,120,ACCENT);
+    }
+    if (!wikiMode && !pronunciation::busy() && page != Page::Wifi && !pronunciation::message().empty() && int32_t(audioNoticeUntil - millis()) > 0) {
         canvas.fillRect(0, 118, 240, 17, PANEL);
         canvas.setFont(&kCjk12);
         printAt(fitEnd(pronunciation::message(), 230), 4, 120, ACCENT);
@@ -720,8 +811,9 @@ void receiveFile(const std::string& request) {
     char name[64] = {};
     unsigned long length = 0, expectedHash = 0;
     const bool audioUpload = request.rfind("putaudio ", 0) == 0;
-    if (sscanf(request.c_str(), audioUpload ? "putaudio %63s %lu %lx" : "put %63s %lu %lx", name, &length, &expectedHash) != 3 ||
-        !length || length > 64 * 1024 * 1024 || !sdMounted) {
+    const bool wikiUpload = request.rfind("putwiki ",0)==0;
+    if (sscanf(request.c_str(), wikiUpload ? "putwiki %63s %lu %lx" : audioUpload ? "putaudio %63s %lu %lx" : "put %63s %lu %lx", name, &length, &expectedHash) != 3 ||
+        !length || length > (wikiUpload ? wiki::kMaxChunkBytes : 64u*1024*1024) || !sdMounted) {
         Serial.println("ERR invalid request or SD unavailable"); return;
     }
     const std::string base = name;
@@ -730,12 +822,13 @@ void receiveFile(const std::string& request) {
         Serial.println("ERR invalid filename"); return;
     }
     const auto dot = base.find_last_of('.');
-    if (audioUpload ? (dot == std::string::npos || (base.substr(dot) != ".mp3" && base.substr(dot) != ".wav") || length > 512 * 1024) :
+    if (wikiUpload ? !wiki::uploadName(base) : audioUpload ? (dot == std::string::npos || (base.substr(dot) != ".mp3" && base.substr(dot) != ".wav") || length > 512 * 1024) :
         (dot == std::string::npos || (base.substr(dot) != ".ifo" && base.substr(dot) != ".idx" && base.substr(dot) != ".dict" &&
         base.substr(dot) != ".txt" && base.substr(dot) != ".json"))) {
         Serial.println("ERR only dictionary data and license files allowed"); return;
     }
-    const std::string directory = audioUpload ? "/audio/en" : "/dictionaries";
+    const std::string directory = wikiUpload ? "/wikipedia" : audioUpload ? "/audio/en" : "/dictionaries";
+    if (wikiUpload) wikiStorage.close();
     const std::string target = directory + "/" + base;
     const std::string partial = directory + "/." + base + ".part";
     // Keep this out of serialCommand's stack frame when the compiler inlines
@@ -812,7 +905,7 @@ void receiveFile(const std::string& request) {
     } else if (!SD.rename(partial.c_str(), target.c_str())) Serial.println("ERR rename failed; partial retained");
     else {
         // A new source file invalidates its derived cache even if FAT timestamps match.
-        if (base.substr(dot) == ".ifo" || base.substr(dot) == ".idx" || base.substr(dot) == ".dict") {
+        if (!wikiUpload && (base.substr(dot) == ".ifo" || base.substr(dot) == ".idx" || base.substr(dot) == ".dict")) {
             const std::string derived = "/dictionaries/" + base.substr(0, dot) + ".cidx";
             if (SD.exists(derived.c_str())) SD.remove(derived.c_str());
         }
@@ -827,6 +920,9 @@ bool injectCharacter(char c) {
         const auto key = M5Cardputer.Keyboard.getKeyValue({x, y});
         if (key.value_first == c || key.value_second == c) {
             state.shift = key.value_first != c;
+            // The diagnostic text path represents literal text, including
+            // punctuation now typed physically with Fn+arrow.
+            state.fn = keyboard::isDirectionKey(key.value_first);
             handleKey(x, y, state);
             return true;
         }
@@ -835,11 +931,54 @@ bool injectCharacter(char c) {
 }
 
 void printInputState() {
-    Serial.printf("STATE direction=%s query=%s composition=%s page=%d candidate_page=%d visible=%u candidate_start=%u selected=%d list_start=%d list_rows=%d\n",
-                  pinyin ? "zh-en" : "en-zh", query.c_str(), composition.c_str(), int(page), candidatePage,
-                  unsigned(composer.visibleCount()), unsigned(composer.pageStart()), selected, wordListStart(), wordListRows());
-    if (page == Page::Definition) Serial.printf("TEXT: %s\n", definition.c_str());
-    if (page == Page::Definition) Serial.printf("DEFINITION page=%d pages=%d\n", definitionPage, definitionPageCount());
+    Serial.printf("STATE direction=%s query=%s composition=%s page=%d candidate_page=%d visible=%u candidate_start=%u selected=%d list_start=%d list_rows=%d input=%s\n",
+                  sourceDirection(), query.c_str(), composition.c_str(), int(page), candidatePage,
+                  unsigned(composer.visibleCount()), unsigned(composer.pageStart()), selected, wordListStart(), wordListRows(),pinyin?"pinyin":"latin");
+    Serial.printf("SOURCE %s\n",sourceId().c_str());
+    Serial.printf("MODE %s\n",wikiMode?"wikipedia":"dictionary");
+    if (page == Page::Definition && wikiMode) {
+        Serial.printf("WIKI_PAGE page=%lu pages=%lu offset=%lu next=%lu bytes=%lu end=%d absolute=%llu\n",(unsigned long)wikiPager.page(),
+            (unsigned long)wikiPager.knownPages(),(unsigned long)wikiPager.frame().begin,(unsigned long)wikiPager.frame().next,
+            (unsigned long)wikiPager.length(),wikiPager.frame().end,(unsigned long long)wikiPager.entry().offset);
+        for (const auto& line:wikiPager.frame().lines) Serial.printf("WIKI_LINE: %s\n",line.c_str());
+    }
+    if (page == Page::Definition && !wikiMode) Serial.printf("TEXT: %s\n", definition.c_str());
+    if (page == Page::Definition && !wikiMode) Serial.printf("DEFINITION page=%d pages=%d\n", definitionPage, definitionPageCount());
+}
+
+void listSdDictionaries() {
+    if(!sdMounted) {Serial.println("ERR SD unavailable");return;}
+    File dir=SD.open("/dictionaries");
+    if(!dir || !dir.isDirectory()) {Serial.println("ERR dictionary directory unavailable");return;}
+    Serial.println("SD_DICTIONARIES_BEGIN");
+    for(File item=dir.openNextFile();item;item=dir.openNextFile()) {
+        if(!item.isDirectory()) {
+            std::string name=item.name();const auto slash=name.find_last_of('/');
+            if(slash!=std::string::npos)name=name.substr(slash+1);
+            Serial.printf("SD_FILE %s %lu\n",name.c_str(),(unsigned long)item.size());
+        }
+        item.close();
+    }
+    dir.close();
+    Serial.printf("SD_WIKIPEDIA installed=%d\n",SD.exists("/wikipedia/wiki.wki"));
+    Serial.println("SD_DICTIONARIES_END");
+}
+
+void removeSdDictionary(const std::string& stem) {
+    const auto files=dictionaries::removalFiles(stem);
+    if(files.empty() || !sdMounted) {Serial.println("ERR protected or invalid dictionary name");return;}
+    const auto prefix="/dictionaries/"+stem;
+    if(activeLexicon && activeLexicon->path==prefix+".ifo") {
+        activeLexicon=nullptr;usingSd=false;
+    }
+    if(otherLexicon.path==prefix+".ifo")otherLexicon.reset();
+    uint32_t removed=0;
+    for(const auto& path:files)if(SD.exists(path.c_str())) {
+        if(!SD.remove(path.c_str())) {Serial.printf("ERR remove failed %s\n",path.c_str());return;}
+        ++removed;Serial.printf("SD_REMOVED %s\n",path.c_str());
+    }
+    scanSd();
+    Serial.printf("SD_REMOVE_DONE %s files=%lu\n",stem.c_str(),(unsigned long)removed);
 }
 
 void serialCommand() {
@@ -852,10 +991,12 @@ void serialCommand() {
             if (overflow) Serial.println("ERR command too long");
             else if (pronunciation::busy() && command != "status" && command != "audio status" && command != "audio stop" && command != "screenshot" && command != "press pronounce")
                 Serial.println("ERR audio busy; use audio stop");
-            else if (command.rfind("put ", 0) == 0 || command.rfind("putaudio ", 0) == 0) receiveFile(command);
+            else if (command.rfind("put ", 0) == 0 || command.rfind("putaudio ", 0) == 0 || command.rfind("putwiki ",0)==0) receiveFile(command);
+            else if (command == "sd dictionaries") listSdDictionaries();
+            else if (command.rfind("sd remove-dictionary ",0)==0) removeSdDictionary(command.substr(21));
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.5.1 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
-                              (unsigned long)(usingSd ? dictionary().count() : kDemoCount), sourceName.c_str(), pinyin ? "zh-en" : "en-zh");
+                Serial.printf("CardputerDict 0.6.4 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                              (unsigned long)(wikiMode ? (wikiStorage.archive.loaded()?wikiStorage.archive.header().count:0) : usingSd ? dictionary().count() : kDemoCount), wikiMode ? "中文维基百科" : sourceName.c_str(), sourceDirection());
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
                 Serial.printf("boot_ready_ms=%lu\n", (unsigned long)bootReadyMs);
                 keyboard::diagnostics();
@@ -872,11 +1013,34 @@ void serialCommand() {
                     if (lexicon->loaded) Serial.printf("cache path=%s mode=%s load_ms=%lu saved=%d\n", lexicon->path.c_str(), lexicon->cacheHit ? "cache" : "scan",
                         (unsigned long)lexicon->loadMs, lexicon->cacheSaved);
                 }
+                Serial.printf("WIKI mode=%d loaded=%d sample=%d entries=%lu text_bytes=%llu input=%s\n",wikiMode,wikiStorage.archive.loaded(),wikiStorage.sample(),
+                    (unsigned long)(wikiStorage.archive.loaded()?wikiStorage.archive.header().count:0),
+                    (unsigned long long)(wikiStorage.archive.loaded()?wikiStorage.archive.header().textBytes:0),pinyin?"pinyin":"latin");
                 Serial.printf("note=%s\n", statusMessage.c_str());
                 pronunciation::diagnostics();
+            } else if (command == "wiki-backup-sample") {
+                if (!SD.exists("/wikipedia/wiki.wki")) Serial.println("WIKI_SAMPLE_BACKUP none");
+                else if (!wikiStorage.open() || !wikiStorage.sample() || wikiStorage.archive.header().textBytes>64u*1024*1024)
+                    Serial.println("ERR only a small marked test pack may be replaced over USB");
+                else {
+                    wikiMode=false;wikiStorage.close();wikiMessage.clear();clearQuery();
+                    char backup[64];snprintf(backup,sizeof(backup),"/wikipedia-test-%lu",(unsigned long)millis());
+                    if (!SD.exists(backup) && SD.rename("/wikipedia",backup)) Serial.printf("WIKI_SAMPLE_BACKUP %s\n",backup);
+                    else Serial.println("ERR sample backup failed; existing files preserved");
+                }
+            } else if (command == "wiki" || command.rfind("wiki ",0)==0) {
+                if (!wikiMode) enterWiki();
+                if (command.size()>5) {
+                    query=command.substr(5);composition.clear();candidates.clear();page=Page::Search;wikiMessage.clear();pinyin=ime::hasHan(query);refreshMatches();
+                    if (!wikiMatches.empty() && dict::compare(wikiMatches[0].title,query)==0) openSelected();else Serial.println("NOT_FOUND");
+                }
+                printInputState();
             } else if (command == "audio status") pronunciation::diagnostics();
             else if (command == "audio stop") pronunciation::stop();
             else if (command == "wifi") openWifiSettings();
+            else if (command == "wifi state") {
+                Serial.printf("WIFI_EDITOR active=%d field=%d ssid_bytes=%u password_bytes=%u\n",page==Page::Wifi,wifiField,unsigned(wifiSsid.size()),unsigned(wifiPassword.size()));
+            }
             else if (command.rfind("speak ", 0) == 0) {
                 pronunciation::request(command.substr(6), sdMounted); pronunciation::diagnostics();
             } else if (command.rfind("speaklocal ", 0) == 0) {
@@ -927,15 +1091,26 @@ void serialCommand() {
             } else if (command.rfind("press ", 0) == 0) {
                 const auto key = command.substr(6);
                 Keyboard_Class::KeysState state;
-                if (key == "tab") handleKey(0, 1, state);
+                if (key == "tab") handleKey(0,1,state);
+                else if (key == "previous-dictionary") {state.shift=true;handleKey(0,1,state);}
+                else if (key == "input") {state.ctrl=true;handleKey(13,3,state);}
+                else if (key == "fn-e") {state.fn=true;handleKey(3,1,state);}
                 else if (key == "enter") handleKey(13, 2, state);
                 else if (key == "backspace") handleKey(13, 0, state);
                 else if (key == "space") injectCharacter(' ');
                 else if (key == "clear") { state.fn = true; handleKey(13, 0, state); }
-                else if (key == "down") { state.fn = true; handleKey(11, 3, state); }
-                else if (key == "up") { state.fn = true; handleKey(11, 2, state); }
-                else if (key == "previous") { state.fn = true; handleKey(10, 3, state); }
-                else if (key == "next") { state.fn = true; handleKey(12, 3, state); }
+                else if (key == "down") handleKey(11,3,state);
+                else if (key == "up") handleKey(11,2,state);
+                else if (key == "previous" || key == "left") handleKey(10,3,state);
+                else if (key == "next" || key == "right") handleKey(12,3,state);
+                else if (key == "fn-up") {state.fn=true;handleKey(11,2,state);}
+                else if (key == "fn-down") {state.fn=true;handleKey(11,3,state);}
+                else if (key == "fn-left") {state.fn=true;handleKey(10,3,state);}
+                else if (key == "fn-right") {state.fn=true;handleKey(12,3,state);}
+                else if (key == "fn-shift-up") {state.fn=state.shift=true;handleKey(11,2,state);}
+                else if (key == "fn-shift-down") {state.fn=state.shift=true;handleKey(11,3,state);}
+                else if (key == "fn-shift-left") {state.fn=state.shift=true;handleKey(10,3,state);}
+                else if (key == "fn-shift-right") {state.fn=state.shift=true;handleKey(12,3,state);}
                 else if (key == "pronounce") { state.fn = true; handleKey(10, 1, state); }
                 else if (key.size() == 1) injectCharacter(key[0]);
                 else Serial.println("ERR unknown key");
@@ -943,6 +1118,7 @@ void serialCommand() {
             }
             else if (command.rfind("lookup ", 0) == 0) {
                 const std::string word = command.substr(7);
+                if (wikiMode) {wikiMode=false;wikiStorage.close();wikiMessage.clear();}
                 switchDirection(ime::hasHan(word));
                 query = word;
                 refreshMatches();
@@ -950,7 +1126,7 @@ void serialCommand() {
                 if (dict::compare(first, query) != 0 || first.empty()) Serial.println("NOT_FOUND");
                 else { openSelected(); Serial.println(definition.c_str()); }
             } else if (!command.empty()) Serial.println("Commands: status | lookup WORD | reload | reindex | ime PINYIN | screenshot | type TEXT | press KEY");
-            if (command != "screenshot" && command.rfind("put ", 0) != 0 && command.rfind("putaudio ", 0) != 0) Serial.println("CMD_DONE");
+            if (command != "screenshot" && command.rfind("put ", 0) != 0 && command.rfind("putaudio ", 0) != 0 && command.rfind("putwiki ",0)!=0) Serial.println("CMD_DONE");
             command.clear(); overflow = false;
         } else if (command.size() < 128) command += c;
         else overflow = true;

@@ -1,0 +1,24 @@
+{
+  "adv": {
+    "sources": [
+      "/dictionaries/cedict.ifo",
+      "@wiki",
+      "/dictionaries/ecdict.ifo"
+    ],
+    "status": "CardputerDict 0.6.4 board=24 heap=56284 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1855\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=48188 max_interval_us=1428\nkeyboard driver=TCA8418 fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer-Adv board_id=24 keyboard=TCA8418 audio=ES8311 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=1 es8311=1\nsd frequency=10000000 dirs_ready=1 card_type=3 size_mb=7618\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=0\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=387 saved=0\ncache path=/dictionaries/cedict.ifo mode=cache load_ms=313 saved=0\ncache path=/dictionaries/pinyin.ifo mode=cache load_ms=301 saved=0\nWIKI mode=0 loaded=0 sample=0 entries=0 text_bytes=0 input=latin\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=255 frames=0 peak=0 path= heap=56284\nCMD_DONE\r\n",
+    "files": "SD_DICTIONARIES_BEGIN\r\nSD_FILE cedict.dict 11849016\nSD_FILE ._cedict.dict 4096\nSD_FILE cedict.idx 3403119\nSD_FILE ._cedict.idx 4096\nSD_FILE cedict.ifo 121\nSD_FILE ._cedict.ifo 4096\nSD_FILE ecdict.dict 29992192\nSD_FILE ._ecdict.dict 4096\nSD_FILE ecdict.idx 17035288\nSD_FILE ._ecdict.idx 4096\nSD_FILE ecdict.ifo 125\nSD_FILE ._ecdict.ifo 4096\nSD_FILE pinyin.dict 951773\nSD_FILE ._pinyin.dict 4096\nSD_FILE pinyin.idx 1542564\nSD_FILE ._pinyin.idx 4096\nSD_FILE pinyin.ifo 124\nSD_FILE ._pinyin.ifo 4096\nSD_FILE ecdict.cidx 48228\nSD_FILE cedict.cidx 12480\nSD_FILE pinyin.cidx 5416\nSD_WIKIPEDIA installed=1\nSD_DICTIONARIES_END\r\nCMD_DONE\r\n",
+    "protected_case_variants_tested": true,
+    "passed": true
+  },
+  "normal": {
+    "sources": [
+      "/dictionaries/cedict.ifo",
+      "@wiki",
+      "/dictionaries/ecdict.ifo"
+    ],
+    "status": "CardputerDict 0.6.4 board=14 heap=56460 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1672\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=19060 max_interval_us=1076\nkeyboard driver=gpio-matrix fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer board_id=14 keyboard=gpio-matrix audio=NS4168 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=0 es8311=0\nsd frequency=10000000 dirs_ready=1 card_type=2 size_mb=480\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=0\nlexicons en=770611 zh=198650 ime=85610\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=390 saved=0\ncache path=/dictionaries/cedict.ifo mode=cache load_ms=294 saved=0\ncache path=/dictionaries/pinyin.ifo mode=cache load_ms=286 saved=0\nWIKI mode=0 loaded=0 sample=0 entries=0 text_bytes=0 input=latin\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=223 frames=0 peak=0 path= heap=56460\nCMD_DONE\r\n",
+    "files": "SD_DICTIONARIES_BEGIN\r\nSD_FILE pinyin-data-LICENSE.txt 1076\nSD_FILE ECDICT-LICENSE.txt 1063\nSD_FILE CC-CEDICT-LICENSE.txt 20138\nSD_FILE sources.json 498\nSD_FILE ecdict.dict 29992192\nSD_FILE ecdict.idx 17035288\nSD_FILE ecdict.ifo 125\nSD_FILE cedict.dict 11849016\nSD_FILE cedict.idx 3403119\nSD_FILE DejaVuSans-LICENSE.txt 4974\nSD_FILE CC-CEDICT-NOTICE.txt 768\nSD_FILE cedict-source.json 229\nSD_FILE ipa-font-source.txt 185\nSD_FILE cedict.ifo 121\nSD_FILE pinyin.dict 951773\nSD_FILE pinyin.idx 1542564\nSD_FILE pinyin.ifo 124\nSD_FILE ecdict.cidx 48228\nSD_FILE cedict.cidx 12480\nSD_FILE pinyin.cidx 5416\nSD_WIKIPEDIA installed=1\nSD_DICTIONARIES_END\r\nCMD_DONE\r\n",
+    "protected_case_variants_tested": true,
+    "passed": true
+  }
+}

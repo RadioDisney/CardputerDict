@@ -1,0 +1,10 @@
+{
+  "status": "CardputerDict 0.6.2 board=24 heap=93176 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh\ndisplay=240x135 rotation=0\nboot_ready_ms=1893\nkeyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=49685 max_interval_us=1020\nkeyboard driver=TCA8418 fifo_events=0 fifo_overflows=0 i2c_errors=0\nDEVICE model=Cardputer-Adv board_id=24 keyboard=TCA8418 audio=ES8311 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=1 es8311=1\nsd frequency=10000000 dirs_ready=1 card_type=3 size_mb=7618\nspacing half=1 full=2\r\ndefinition font_height=14 line_gap=4 line_step=18 rows=4\nresults line_step=17 rows=4 start=0 selected=0 count=5\nlexicons en=770611 zh=0 ime=0\ncache path=/dictionaries/ecdict.ifo mode=cache load_ms=386 saved=0\nWIKI mode=0 loaded=0 sample=0 entries=0 text_bytes=0 input=latin\nnote=\nAUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=255 frames=0 peak=0 path= heap=93176\nCMD_DONE\r\n",
+  "wikipedia_changed_bbox": [
+    6,
+    5,
+    102,
+    12
+  ],
+  "passed": true
+}

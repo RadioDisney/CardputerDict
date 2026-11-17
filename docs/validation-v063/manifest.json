@@ -1,0 +1,34 @@
+{
+  "name": "CardputerDict",
+  "version": "0.6.3",
+  "mode_order": [
+    "英汉",
+    "汉英",
+    "百科"
+  ],
+  "Tab": "forward",
+  "Shift+Tab": "reverse",
+  "fixed_title": "CARDPUTER DICT",
+  "firmware": {
+    "CardputerDict-0.6.3-app.bin": {
+      "bytes": 3550688,
+      "sha256": "f345ee4c89f1022bfa82a02f44fed1b4cef9f91c6ed3b0fdb38a4d6438f31af1",
+      "address": "0x10000",
+      "preserves_nvs": true
+    },
+    "CardputerDict-0.6.3-merged.bin": {
+      "bytes": 3616224,
+      "sha256": "d8cb090d2ff06f447480f26f4d8d36434ded2997ad2c00b537637adc2a6960c9",
+      "address": "0x0",
+      "preserves_nvs": false
+    }
+  },
+  "device_checks": {
+    "adv": true,
+    "normal": true,
+    "forward_cycles": 3,
+    "reverse_cycles": 2
+  },
+  "sd_data_changed": false,
+  "m5burner_uploaded": false
+}

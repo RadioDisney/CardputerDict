@@ -6,3 +6,12 @@ build/
 backups/
 platformio.local.ini
 
+
+# Wikipedia corpus and host conversion environment are generated separately.
+sdcard/wikipedia/
+.venv-wiki/
+
+# Full dictionary assets are distributed through GitHub Releases.
+sdcard/dictionaries/ecdict.*
+sdcard/dictionaries/cedict.*
+sdcard/dictionaries/pinyin.*

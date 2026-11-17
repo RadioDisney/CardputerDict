@@ -1,17 +1,19 @@
-CardputerDict 0.2.1 SD assets
+CardputerDict 0.6.4 — 中文维基百科与英汉/汉英离线词典
 
-Copy dictionaries/ and licenses/ to the root of a FAT32 microSD card.
+Tab：根据SD已安装词库循环；当前保留英汉、汉英、百科。拼音是输入辅助，不参与切换。
+Shift+Tab：反向切换词库。
+Ctrl+Space：切换拼音 / 直接输入，不改变当前词库。
+Enter：打开词条或文章。Space / ↓ / →：下一页。↑ / ←：上一页。
+方向键直接选择/翻页，无需Fn。Fn+方向键输入 ; . , /，再加Shift输入 : > < ?。
+拼音候选用左右方向键或[ / ]翻页。
+Backspace / `：返回查询。Fn+Backspace：清空。Fn+H：帮助。Fn+R：重载SD。
 
-ECDICT: 770611 English headwords -> Chinese.
-CC-CEDICT: 198650 simplified/traditional headwords -> English.
-Pinyin: 85610 tone-free spellings -> simplified Chinese word candidates.
-Demo: 29 English/Chinese headwords.
+此完整卡含2026-11-01中文维基快照：1,563,854篇正文，4,863,298个标题/别名。
+wikipedia/ 是完整百科（约5.15GB）；dictionaries/、licenses/ 是原词库及许可。
+个人发音可放入audio/en/，或在设备设置WiFi后按需缓存英文发音。
 
-Tab switches English-Chinese / Chinese-English and clears the input.
-Type pingguo, choose Apple/苹果 with Space or 1, then Enter to look it up.
-Candidates: 1-9, packed on a single line according to word width; previous/next page: [ and ]; v for umlaut u.
-Fn+H: help. Fn+R: reload.
+旧的Fn+E、Fn+D不再用于词库切换。
+第一次启动可能需要建立原英汉词库缓存，维基本身使用电脑预生成索引。
+更多说明见同目录《中文维基百科安装说明.md》。
 
-Derived cedict.* and pinyin.* data: CC BY-SA 4.0.
-See licenses/CC-CEDICT-NOTICE.txt and licenses/CC-CEDICT-LICENSE.txt.
-Other data and application code retain their respective licenses.
+项目中的 dictionaries/demo.* 仅作为主机测试样本保留，不要复制到生产SD卡；tools/copy_sd.py 会自动跳过这些文件。

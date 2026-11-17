@@ -27,7 +27,12 @@ def main():
     for file in sorted(source.rglob("*")):
         if not file.is_file():
             continue
-        target = volume / file.relative_to(source)
+        relative=file.relative_to(source)
+        # demo.* remains a host test fixture; don't reinstall a demo SD source
+        # when provisioning the production English/Chinese/Wikipedia card.
+        if relative.parts[0]=="dictionaries" and file.name.startswith("demo."):
+            continue
+        target = volume / relative
         # Refuse symlinks or paths that could escape the selected volume.
         if not target.resolve().is_relative_to(volume):
             parser.error(f"Destination escapes volume: {target}")
