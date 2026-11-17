@@ -1,0 +1,82 @@
+{
+  "passed": true,
+  "release_id": 447944082,
+  "draft": true,
+  "tag": "v0.6.4",
+  "url": "https://github.com/RadioDisney/CardputerDict/releases/tag/untagged-d93b0e93cf2011a7a763",
+  "all_server_sha256_match": true,
+  "assets": [
+    {
+      "name": "CardputerDict-0.6.4-app.bin",
+      "bytes": 3553776,
+      "digest": "sha256:e51ac46e52fb6aaae58cc954b9a45bcc51e47b7d388576c6b65e92ebb53c06c1",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/CardputerDict-0.6.4-app.bin"
+    },
+    {
+      "name": "CardputerDict-0.6.4-merged.bin",
+      "bytes": 3619312,
+      "digest": "sha256:346240b38be5bfbeaf8180f7b885a5d844c700a665dcab90d9cc62ce4b386b7e",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/CardputerDict-0.6.4-merged.bin"
+    },
+    {
+      "name": "CardputerDict-0.6.4-SD-dictionaries.zip",
+      "bytes": 25183024,
+      "digest": "sha256:64046df4727a433bb6cb986e32ca1c5098179e4e18a4ea56fda5c46087e71780",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/CardputerDict-0.6.4-SD-dictionaries.zip"
+    },
+    {
+      "name": "CardputerDict-0.6.4-UI-workflow.gif",
+      "bytes": 392277,
+      "digest": "sha256:ed64fdec6b78fdef2cb191a93c8207931be3f4aba0819d5fed6a4df089d810cb",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/CardputerDict-0.6.4-UI-workflow.gif"
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-1-of-5.zip",
+      "bytes": 446349648,
+      "digest": "sha256:3f852cdbdfd70eb24701ecf975af06fbfa47d925f61fbf5a305ce85e638381fe",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/CardputerDict-Wikipedia-zh-20261101-part-1-of-5.zip"
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-2-of-5.zip",
+      "bytes": 386848369,
+      "digest": "sha256:b0e923ef7c0088a6be5758a488e6a05ec91598883fcc6030961036a707517887",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/CardputerDict-Wikipedia-zh-20261101-part-2-of-5.zip"
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-3-of-5.zip",
+      "bytes": 392630287,
+      "digest": "sha256:519579defcbc9e7baf083f929f7d18acadb03aac2ae5b5ff7851c31977a62e47",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/CardputerDict-Wikipedia-zh-20261101-part-3-of-5.zip"
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-4-of-5.zip",
+      "bytes": 398643148,
+      "digest": "sha256:4e13b34b49ed3257e0bdb1898c8174a7363c2d8aed55554106369a2fc3a47152",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/CardputerDict-Wikipedia-zh-20261101-part-4-of-5.zip"
+    },
+    {
+      "name": "CardputerDict-Wikipedia-zh-20261101-part-5-of-5.zip",
+      "bytes": 312759432,
+      "digest": "sha256:9cc34d180e60e53f57d6078c52891c6f1e86b78bc0b3de4df488f163439c8101",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/CardputerDict-Wikipedia-zh-20261101-part-5-of-5.zip"
+    },
+    {
+      "name": "data-assets.json",
+      "bytes": 4212,
+      "digest": "sha256:cf6641c7176d6da342ba9855873d596499432e1b0e5f5a8e2dc261b165649330",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/data-assets.json"
+    },
+    {
+      "name": "SD-INSTALL.txt",
+      "bytes": 1453,
+      "digest": "sha256:2e84f028161e150640124886f878f8d018e660ca0c3c6ec53ba12f304aa4e44d",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/SD-INSTALL.txt"
+    },
+    {
+      "name": "SHA256SUMS.txt",
+      "bytes": 887,
+      "digest": "sha256:7e684256a3898f6795b213747ba1fab7c8bb35d1051535ffa3a3631d3f26f7ba",
+      "url": "https://github.com/RadioDisney/CardputerDict/releases/download/untagged-d93b0e93cf2011a7a763/SHA256SUMS.txt"
+    }
+  ]
+}

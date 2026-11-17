@@ -16,7 +16,7 @@ M5Stack **Cardputer / Cardputer-Adv** 通用离线词典与中文维基百科阅
 | `CardputerDict-Wikipedia-zh-20261101-part-1-of-5.zip` 至 `part-5-of-5.zip` | 完整中文维基，**五个ZIP全部需要**，合计约1.94GB压缩 / 5.15GB解压 |
 | `data-assets.json`、`SHA256SUMS.txt` | 文件清单、长度和SHA-256校验值 |
 
-M5Burner中分别提供 **Cardputer** 和 **Cardputer ADV** 条目，使用同一通用合并镜像。烧录完整镜像会重置片内WiFi和音量设置；SD文件保留。固件内只有29词演示，完整功能需要以下SD数据安装。
+M5Burner中分别在 **Cardputer** 和 **Cardputer ADV** 分类提交0.6.4，两个条目统一申请名称 **CardputerDict 百科词典**，使用同一通用合并镜像。固件版本与公共名称/资料均需M5Burner审核，审核前可能仍显示旧名称。烧录完整镜像会重置片内WiFi和音量设置；SD文件保留。固件内只有29词演示，完整功能需要以下SD数据安装。
 
 ## SD卡要求与安装
 

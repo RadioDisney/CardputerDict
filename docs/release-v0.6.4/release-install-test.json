@@ -1,0 +1,76 @@
+{
+  "passed": true,
+  "complete": true,
+  "articles": 1563854,
+  "search_entries": 4863298,
+  "text_bytes": 4964649705,
+  "index_records_checked": 4863298,
+  "probes": {
+    "offset_over_4GiB": {
+      "offset": 4315621527,
+      "bytes": 6107,
+      "first_line": "「一带一路」专员",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "cross_chunk": {
+      "offset": 2147470430,
+      "bytes": 49777,
+      "first_line": "11世纪月食列表",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "Linux": {
+      "offset": 1067524,
+      "bytes": 27054,
+      "first_line": "Linux",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "中国": {
+      "offset": 1576903,
+      "bytes": 114670,
+      "first_line": "中国",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "中國": {
+      "offset": 1576903,
+      "bytes": 114670,
+      "first_line": "中国",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "数学": {
+      "offset": 0,
+      "bytes": 24679,
+      "first_line": "数学",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "维基百科": {
+      "offset": 4865012,
+      "bytes": 79687,
+      "first_line": "维基百科",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "苹果": {
+      "offset": 45784735,
+      "bytes": 17522,
+      "first_line": "苹果",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "蘋果": {
+      "offset": 45784735,
+      "bytes": 17522,
+      "first_line": "苹果",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "計算機": {
+      "offset": 1327789700,
+      "bytes": 1405,
+      "first_line": "计算机",
+      "last_line": "纯文字整理，已转换简体。"
+    },
+    "计算机": {
+      "offset": 1327789700,
+      "bytes": 1405,
+      "first_line": "计算机",
+      "last_line": "纯文字整理，已转换简体。"
+    }
+  }
+}

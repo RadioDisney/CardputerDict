@@ -1,0 +1,28 @@
+{
+  "version": "0.6.4",
+  "devices": [
+    "Cardputer",
+    "Cardputer ADV"
+  ],
+  "file": "CardputerDict-0.6.4-M5Burner.bin",
+  "offset": "0x0",
+  "cover": "CardputerDict-0.6.4-UI-workflow.gif",
+  "cover_frames": 31,
+  "gif_duration_ms": 23320,
+  "visibility": "public",
+  "status": "pending-review",
+  "name": "CardputerDict 百科词典",
+  "uploaded": true,
+  "public_metadata_status": "pending-review",
+  "public_name_before_approval": "旧名称仍可见，审核通过后更新",
+  "github_release": "https://github.com/RadioDisney/CardputerDict/releases/tag/v0.6.4",
+  "source_commit": "4b69cef2c59ef443eea191aa8e1b6bbef6178595",
+  "versions": {
+    "Cardputer": "https://burner.m5stack.com/developer/firmware/2120468585455984642/versions",
+    "Cardputer ADV": "https://burner.m5stack.com/developer/firmware/2122146817619476482/versions"
+  },
+  "firmware_bytes": 3619312,
+  "sha256": "346240b38be5bfbeaf8180f7b885a5d844c700a665dcab90d9cc62ce4b386b7e",
+  "cover_sha256": "ed64fdec6b78fdef2cb191a93c8207931be3f4aba0819d5fed6a4df089d810cb",
+  "contains_wifi_credentials": false
+}
