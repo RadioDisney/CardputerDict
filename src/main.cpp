@@ -701,7 +701,7 @@ bool exactSelectionMatch(SdLexicon& lexicon,const std::string& term) {
 void requestSelectionLookup() {
     if(selectionLookupQueued)return;
     const auto range=textSelection.range();
-    if(range.begin==range.end) {selectionNotice="请用Ctrl+方向键选词";dirty=true;return;}
+    if(range.begin==range.end) {selectionNotice="请用Ctrl+方向键框选";dirty=true;return;}
     selectionLookupQueued=true;selectionLookupShown=false;selectionLookupQueuedMs=millis();
     selectionNotice="查询中…";selectionBlink.hide();suppressDirectionRepeats();dirty=true;
     // Present the progress message before even extracting text or touching an
@@ -712,7 +712,7 @@ void requestSelectionLookup() {
 
 void lookupTextSelection() {
     const auto range=textSelection.range();
-    if(range.begin==range.end) {selectionNotice="请用Ctrl+方向键选词";dirty=true;return;}
+    if(range.begin==range.end) {selectionNotice="请用Ctrl+方向键框选";dirty=true;return;}
     if(range.end-range.begin>dict::kMaxWordBytes) {selectionNotice="选词过长，请缩小范围";dirty=true;return;}
     std::string raw;
     if(!readSelectionBytes(range,raw)) {selectionNotice="选词读取失败，请重试";dirty=true;return;}
@@ -974,7 +974,7 @@ void render() {
         }
         paintSelectionCursor();
         canvas.setFont(&kCjk12);
-        const std::string footer = textSelection.active() ? (selectionNotice.empty()?"Ctrl+方向选 Enter查询":selectionNotice) : !selectionNotice.empty()?selectionNotice : wikiMode ? (std::string(wikiStorage.sample()?"试读 ":"")+std::to_string(wikiPager.page()+1)+"页 "+
+        const std::string footer = textSelection.active() ? (selectionNotice.empty()?"Ctrl+方向框选 Enter查询":selectionNotice) : !selectionNotice.empty()?selectionNotice : wikiMode ? (std::string(wikiStorage.sample()?"试读 ":"")+std::to_string(wikiPager.page()+1)+"页 "+
             std::to_string(uint64_t(wikiPager.frame().next)*100/wikiPager.length())+"% Ctrl+F选词") :
             std::to_string(definitionPage + 1) + "/" + std::to_string(definitionPageCount()) + " Ctrl+F选词 Fn+P朗读";
         printHintAt(footer, 5, 121);
