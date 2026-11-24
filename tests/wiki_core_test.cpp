@@ -52,7 +52,12 @@ int main() {
     uint32_t next=0;
     do {
         const auto frame=pager.frame();assert(frame.begin==next && frame.next>frame.begin && frame.lines.size()<=4);
-        for(const auto& line:frame.lines)assert(width(line)<=12);
+        assert(frame.spans.size()==frame.lines.size());
+        for(size_t row=0;row<frame.lines.size();++row) {
+            const auto span=frame.spans[row];
+            assert(width(frame.lines[row])<=12 && span.begin>=frame.begin && span.end<=frame.next && span.begin<=span.end);
+            assert(text.data.substr(span.begin,span.end-span.begin)==frame.lines[row]);
+        }
         pages.push_back(frame);next=frame.next;
         if(frame.end)break;
         assert(pager.move(1));

@@ -21,6 +21,7 @@ uint32_t scans = 0, overflow = 0, maxIntervalUs = 0;
 uint8_t testKeys[32] = {};
 size_t testCount = 0;
 uint32_t testStart = 0, testHoldMs = 8, testGapMs = 4;
+uint64_t testModifiersHeld = 0;
 std::unique_ptr<Adafruit_TCA8418> controller;
 uint64_t advHeld = 0;
 uint32_t fifoEvents = 0, fifoOverflows = 0, i2cErrors = 0;
@@ -89,7 +90,7 @@ void scan(void*) {
             const uint32_t period = testHoldMs + testGapMs;
             const size_t index = uint32_t(testAge) / period;
             if (index >= testCount) testCount = 0;
-            else if (uint32_t(testAge) % period < testHoldMs) injectedRaw |= uint64_t(1) << testKeys[index];
+            else if (uint32_t(testAge) % period < testHoldMs) injectedRaw |= (uint64_t(1) << testKeys[index]) | testModifiersHeld;
         }
         portEXIT_CRITICAL(&lock);
         const uint64_t held = filter.update(now, controller ? injectedRaw : (raw | injectedRaw));
@@ -134,12 +135,14 @@ bool stopRequested() {
     const auto held = heldKeys();
     return (held & keyBit(0, 0)) || ((held & keyBit(0, 2)) && (held & keyBit(10, 1)));
 }
-bool injectTaps(const uint8_t* keys, size_t count, uint32_t heldMs, uint32_t gapMs) {
+bool injectTaps(const uint8_t* keys, size_t count, uint32_t heldMs, uint32_t gapMs, uint64_t modifiersHeld) {
     if (!scanner || !count || count > sizeof(testKeys) || heldMs < 4 || heldMs > 2000 || gapMs < 4 || gapMs > 1000) return false;
+    constexpr uint64_t modifierMask=keyBit(0,2)|keyBit(1,2)|keyBit(0,3)|keyBit(1,3)|keyBit(2,3);
+    if(modifiersHeld & ~modifierMask)return false;
     for (size_t i = 0; i < count; ++i) if (keys[i] >= kKeyCount) return false;
     portENTER_CRITICAL(&lock);
     if (testCount) { portEXIT_CRITICAL(&lock); return false; }
-    memcpy(testKeys, keys, count); testCount = count; testHoldMs = heldMs; testGapMs = gapMs; testStart = millis() + 5;
+    memcpy(testKeys, keys, count); testCount = count; testHoldMs = heldMs; testGapMs = gapMs; testStart = millis() + 5;testModifiersHeld=modifiersHeld;
     portEXIT_CRITICAL(&lock);
     return true;
 }

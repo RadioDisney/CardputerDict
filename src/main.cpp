@@ -11,6 +11,8 @@
 #include "key_repeat.h"
 #include "keyboard_input.h"
 #include "navigation_keys.h"
+#include "text_selection.h"
+#include "cursor_blink.h"
 #include "device_hardware.h"
 #include "wiki_sd.h"
 #include "dictionary_sources.h"
@@ -71,6 +73,15 @@ int& candidatePage = composer.page;
 std::string query, definition, headword;
 std::string sourceName = "内置演示", statusMessage;
 std::vector<std::string> lines;
+std::vector<textsel::Span> definitionSpans;
+textsel::Selection textSelection;
+std::string selectionNotice;
+CursorBlink selectionBlink;
+bool selectionLookupQueued=false,selectionLookupShown=false;
+uint32_t selectionLookupQueuedMs=0,selectionLookupShownMs=0,lookupInputCutoff=0;
+bool discardLookupInput=false;
+KeyRepeat directionRepeats[4];
+uint32_t directionRepeatEvents=0;
 int selected = 0, definitionPage = 0, activeDictionary = -1;
 bool sdMounted = false, usingSd = false, pinyin = false, dirty = true;
 uint32_t sdFrequency = 0;
@@ -102,6 +113,17 @@ size_t resultCount() {return wikiMode ? wikiMatches.size() : usingSd ? matches.s
 std::string resultWord(size_t i) {return wikiMode ? wikiMatches[i].title : usingSd ? matches[i].word : std::string(kDemo[demoMatches[i]].word);}
 void render();
 
+void suppressDirectionRepeats() {
+    const auto held=keyboard::heldKeys();
+    for(size_t i=0;i<keyboard::kDirectionKeyIds.size();++i)
+        directionRepeats[i].update(millis(),held & (uint64_t(1)<<keyboard::kDirectionKeyIds[i]),false);
+}
+
+void cancelTextSelection() {
+    textSelection.cancel();selectionBlink.hide();selectionNotice.clear();
+    selectionLookupQueued=selectionLookupShown=false;
+}
+
 void printAt(const std::string& text, int x, int y, uint16_t color = FG) {
     canvas.setTextColor(color);
     ui::printText(canvas, text, x, y);
@@ -123,6 +145,33 @@ std::string fitTail(std::string text, int width) {
     while (!text.empty() && textWidth(text) > width)
         text.erase(0, dict::utf8Length(uint8_t(text[0])));
     return text;
+}
+
+// Only UI hints use this renderer; dictionary and article text keep their
+// original colors. Keep spacing continuous across color boundaries.
+void printHintAt(const std::string& text, int x, int y, int width=230) {
+    static const char* const keys[] = {
+        "Ctrl+方向键", "Ctrl+方向", "Ctrl+Space", "Shift+Tab", "Fn+退格",
+        "Ctrl+F", "Fn+P", "Fn+W", "Fn+R", "Fn+H", "Fn+=", "Fn+-",
+        "Enter", "Backspace", "Tab", "方向键", "空格/数字", "空格", "数字", "左右", "上下", "Fn", "`"
+    };
+    const auto visible=fitEnd(text,width);
+    canvas.setCursor(x,y);
+    int previousSpacing=0;bool havePrevious=false;
+    size_t keyEnd=0;
+    for(size_t pos=0;pos<visible.size();) {
+        if(pos>=keyEnd)for(const auto* key:keys) {
+            const size_t length=strlen(key);
+            if(visible.compare(pos,length,key)==0) {keyEnd=pos+length;break;}
+        }
+        const auto character=ui::decode(visible,pos);
+        const int spacing=ui::letterSpacing(character.code);
+        if(spacing && havePrevious)canvas.setCursor(canvas.getCursorX()+previousSpacing,y);
+        canvas.setTextColor(pos<keyEnd?ACCENT:MUTED);
+        canvas.print(visible.substr(pos,character.bytes).c_str());
+        if(spacing) {previousSpacing=spacing;havePrevious=true;}
+        pos+=character.bytes;
+    }
 }
 
 void paintProgress(uint32_t done, uint32_t total, const char* label="正在建立词库索引") {
@@ -200,6 +249,7 @@ void scheduleSearch() {
 }
 
 void clearQuery() {
+    cancelTextSelection();suppressDirectionRepeats();
     query.clear(); composition.clear(); candidates.clear();
     composer.resetLayout();
     page = Page::Search;
@@ -444,26 +494,27 @@ int wordListStart() {
 }
 
 void wrapDefinition() {
-    lines.clear();
+    lines.clear();definitionSpans.clear();
     canvas.setFont(&kBodyFont);
-    std::string current;
+    std::string current;size_t lineStart=0;
     for (size_t pos = 0; pos < definition.size();) {
         const uint8_t c = uint8_t(definition[pos]);
         if (c == '\r') { ++pos; continue; }
-        if (c == '\n') { lines.push_back(current); current.clear(); ++pos; continue; }
+        if (c == '\n') { lines.push_back(current);definitionSpans.push_back({uint32_t(lineStart),uint32_t(pos)});current.clear();++pos;lineStart=pos;continue; }
         const size_t bytes = std::min(dict::utf8Length(c), definition.size() - pos);
         const auto glyph = c == '\t' ? std::string(" ") : definition.substr(pos, bytes);
         pos += bytes;
         if (!current.empty() && textWidth(current + glyph) > 228) {
-            lines.push_back(current); current.clear();
+            lines.push_back(current);definitionSpans.push_back({uint32_t(lineStart),uint32_t(pos-bytes)});current.clear();lineStart=pos-bytes;
         }
         current += glyph;
     }
-    if (!current.empty() || lines.empty()) lines.push_back(current);
+    if (!current.empty() || lines.empty()) {lines.push_back(current);definitionSpans.push_back({uint32_t(lineStart),uint32_t(definition.size())});}
     definitionPage = 0;
 }
 
 void openSelected() {
+    cancelTextSelection();suppressDirectionRepeats();
     if (searchPending) refreshMatches();
     if (wikiMode) {
         if (selected<0 || selected>=int(wikiMatches.size())) return;
@@ -538,6 +589,7 @@ void restoreAfterAudioNetwork() {
 }
 
 void openWifiSettings() {
+    cancelTextSelection();suppressDirectionRepeats();
     pronunciation::stop(); restoreAfterAudioNetwork();
     wifiReturnPage = page == Page::Wifi ? Page::Search : page;
     wifiSsid = pronunciation::savedSsid(); wifiPassword.clear(); wifiError.clear(); wifiField = 0;
@@ -560,6 +612,7 @@ void pronounceSelected() {
 }
 
 void move(int amount) {
+    cancelTextSelection();
     if (page == Page::Definition && wikiMode) {
         if (!wikiPager.move(amount)) wikiMessage="读取失败或已取消，Fn+R重载";
     } else if (page == Page::Definition) {
@@ -573,9 +626,141 @@ void move(int amount) {
     dirty = true;
 }
 
+bool readSelectionBytes(textsel::Span span,std::string& text) {
+    if(span.end<span.begin)return false;
+    const uint32_t size=span.end-span.begin;
+    if(size>4096)return false;
+    text.assign(size,'\0');
+    if(!size)return true;
+    if(wikiMode) return wikiStorage.archive.read(wikiPager.entry(),span.begin,reinterpret_cast<uint8_t*>(&text[0]),size)==size;
+    if(span.end>definition.size())return false;
+    text=definition.substr(span.begin,size);return true;
+}
+
+bool selectionRows(std::vector<textsel::Row>& rows) {
+    rows.clear();canvas.setFont(&kBodyFont);
+    const int count=definitionRows();
+    for(int row=0;row<count;++row) {
+        textsel::Span span;
+        if(wikiMode) {
+            if(size_t(row)>=wikiPager.frame().spans.size())break;
+            const auto source=wikiPager.frame().spans[row];span={source.begin,source.end};
+        } else {
+            const size_t at=size_t(definitionPage*count+row);
+            if(at>=definitionSpans.size())break;
+            span=definitionSpans[at];
+        }
+        // Existing reader rows are width-limited; reject corrupt geometry
+        // without attempting an article-sized allocation.
+        if(span.end<span.begin || span.end-span.begin>4096)return false;
+        std::string raw;if(!readSelectionBytes(span,raw))return false;
+        rows.push_back(textsel::makeRow(raw,span.begin,[](const std::string& glyph){return canvas.textWidth(glyph.c_str());}));
+    }
+    return !rows.empty();
+}
+
+void toggleTextSelection() {
+    suppressDirectionRepeats();selectionNotice.clear();
+    if(textSelection.active())cancelTextSelection();
+    else {
+        std::vector<textsel::Row> rows;
+        if(!selectionRows(rows) || !textSelection.start(std::move(rows)))selectionNotice="无法读取当前页，请重试";
+        else selectionBlink.show(millis());
+    }
+    dirty=true;
+}
+
+void moveTextSelection(textsel::Direction direction,bool extend) {
+    selectionNotice.clear();
+    const auto boundary=textSelection.move(direction,extend);
+    if(boundary!=textsel::Boundary::None) {
+        const bool previous=boundary==textsel::Boundary::Previous;
+        const bool allowed=wikiMode ? (previous?wikiPager.frame().begin>0:!wikiPager.frame().end) :
+            (previous?definitionPage>0:definitionPage+1<definitionPageCount());
+        if(allowed) {
+            bool moved=true;
+            if(wikiMode)moved=wikiPager.move(previous?-1:1);
+            else definitionPage+=previous?-1:1;
+            if(moved) {
+                std::vector<textsel::Row> rows;
+                if(!selectionRows(rows) || !textSelection.setPage(std::move(rows),previous,direction,extend)) {
+                    textSelection.cancel();selectionNotice="读取失败，请重新选词";
+                }
+            } else selectionNotice="翻页失败或已取消";
+        }
+    }
+    if(textSelection.active())selectionBlink.show(millis());
+    dirty=true;
+}
+
+bool exactSelectionMatch(SdLexicon& lexicon,const std::string& term) {
+    const auto items=lexicon.dictionary.suggest(term,1);
+    return !items.empty() && dict::compare(items.front().word,term)==0;
+}
+
+void requestSelectionLookup() {
+    if(selectionLookupQueued)return;
+    const auto range=textSelection.range();
+    if(range.begin==range.end) {selectionNotice="请用Ctrl+方向键选词";dirty=true;return;}
+    selectionLookupQueued=true;selectionLookupShown=false;selectionLookupQueuedMs=millis();
+    selectionNotice="查询中…";selectionBlink.hide();suppressDirectionRepeats();dirty=true;
+    // Present the progress message before even extracting text or touching an
+    // index. The actual lookup runs on the next loop iteration.
+    Serial.printf("SELECTION_LOOKUP state=queued ms=%lu\n",(unsigned long)selectionLookupQueuedMs);
+    render();
+}
+
+void lookupTextSelection() {
+    const auto range=textSelection.range();
+    if(range.begin==range.end) {selectionNotice="请用Ctrl+方向键选词";dirty=true;return;}
+    if(range.end-range.begin>dict::kMaxWordBytes) {selectionNotice="选词过长，请缩小范围";dirty=true;return;}
+    std::string raw;
+    if(!readSelectionBytes(range,raw)) {selectionNotice="选词读取失败，请重试";dirty=true;return;}
+    const auto term=textsel::queryText(raw);
+    if(term.empty()) {selectionNotice="请选择文字后查询";dirty=true;return;}
+    if(wikiMode) {
+        std::vector<wiki::Entry> found;
+        if(wikiStorage.archive.suggest(term,found,kRows) && !found.empty() && dict::compare(found.front().title,term)==0) {
+            query=term;composition.clear();candidates.clear();wikiMatches=std::move(found);selected=0;searchPending=false;openSelected();return;
+        }
+    } else if(usingSd && activeLexicon && exactSelectionMatch(*activeLexicon,term)) {
+        query=term;composition.clear();candidates.clear();refreshMatches();openSelected();return;
+    } else if(!usingSd && !wikiMode) {
+        for(size_t i=0;i<kDemoCount;++i)if(dict::compare(kDemo[i].word,term)==0) {
+            query=term;composition.clear();candidates.clear();refreshMatches();openSelected();return;
+        }
+    }
+    const bool chinese=ime::hasHan(term);
+    auto& target=chinese?chineseLexicon:englishLexicon;
+    const std::string path=chinese?dictionaries::kChinese:dictionaries::kEnglish;
+    if(!sdMounted || !SD.exists(path.c_str()) || !loadLexicon(target,path) || !exactSelectionMatch(target,term)) {
+        selectionNotice="未找到所选词，可调整范围";dirty=true;return;
+    }
+    // Resolve first, then change the reader. An ordinary missing-word lookup
+    // leaves the current article, page and selected range intact.
+    wikiMode=false;wikiStorage.close();wikiMessage.clear();switchDirection(chinese);
+    query=term;refreshMatches();openSelected();
+}
+
+void paintTextSelection() {
+    if(!textSelection.active())return;
+    const auto& rows=textSelection.rows();
+    for(size_t row=0;row<rows.size();++row)for(const auto& cell:rows[row].cells)if(textSelection.selected(cell)) {
+        canvas.fillRect(5+cell.x,kDefinitionTop+int(row)*definitionLineStep()-1,std::max(2,cell.width+1),bodyFontHeight()+2,SELECT);
+    }
+}
+
+void paintSelectionCursor() {
+    if(!textSelection.active() || !selectionBlink.visible() || selectionLookupQueued)return;
+    const int x=std::min(235,5+textSelection.cursorX());
+    const int y=kDefinitionTop+int(textSelection.row())*definitionLineStep();
+    canvas.drawFastVLine(x,y,bodyFontHeight(),ACCENT);
+}
+
 void handleKey(int x, int y, const Keyboard_Class::KeysState& physicalState) {
     const auto key = M5Cardputer.Keyboard.getKeyValue({x, y});
     const char base = key.value_first;
+    if(selectionLookupQueued)return;
     auto state=physicalState;
     state.fn=keyboard::directionFn(base,physicalState.fn);
     if (pronunciation::busy()) {
@@ -608,6 +793,29 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& physicalState) {
         }
         return;
     }
+    if(page==Page::Definition && !physicalState.fn && !physicalState.alt && !physicalState.opt) {
+        if(physicalState.ctrl && base=='f') {toggleTextSelection();return;}
+        if(physicalState.ctrl && x==13 && y==2) {
+            if(textSelection.active())requestSelectionLookup();
+            else {selectionNotice="Ctrl+F开启选词";dirty=true;}
+            return;
+        }
+        if(textSelection.active()) {
+            if(x==13 && y==2) {requestSelectionLookup();return;}
+            if(keyboard::isDirectionKey(base)) {
+                const auto direction=base==';'?textsel::Direction::Up:base=='.'?textsel::Direction::Down:
+                    base==','?textsel::Direction::Left:textsel::Direction::Right;
+                moveTextSelection(direction,physicalState.ctrl);return;
+            }
+            if(base=='`' || (x==13 && y==0)) {
+                if(x==13 && y==0)backspaceRepeat.update(millis(),true,false);
+                cancelTextSelection();dirty=true;return;
+            }
+            if(x==0 && y==1) {cancelTextSelection();}
+            else return;
+        }
+    }
+    if(textSelection.active()) {cancelTextSelection();}
     if (state.ctrl && !state.fn && !state.alt && !state.opt && base==' ') {toggleInput();return;}
     if (state.fn) {
         if (keyboard::isDirectionKey(base)) {
@@ -618,7 +826,7 @@ void handleKey(int x, int y, const Keyboard_Class::KeysState& physicalState) {
             } else move(amount);
             return;
         }
-        if (base == 'h') { page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
+        if (base == 'h') { cancelTextSelection();suppressDirectionRepeats();page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
         else if (base == 'r') scanSd(state.shift);
 
         else if (base == 'p') pronounceSelected();
@@ -680,19 +888,42 @@ Keyboard_Class::KeysState keyState(uint64_t held) {
     return result;
 }
 
+bool allowDirectionRepeat(const Keyboard_Class::KeysState& state,bool capturedAudio=false) {
+    return keyboard::repeatDirectionAllowed(state.fn,state.ctrl,state.alt,state.opt,
+        page==Page::Definition && textSelection.active(),capturedAudio || pronunciation::busy() || selectionLookupQueued || page==Page::Help);
+}
+
 void handleKeyEvent(const keyboard::Event& event) {
-    auto state = keyState(event.held);
-    const bool backspace = event.key == 13;
-    const bool plain = !state.fn && !state.ctrl && !state.alt && !state.opt;
-    const bool heldBackspace = event.held & keyboard::keyBit(13, 0);
-    if (!plain || event.audio || pronunciation::busy()) backspaceRepeat.update(millis(), heldBackspace, false);
-    if (backspace && !event.pressed) { backspaceRepeat.update(millis(), false); return; }
-    // Do not replay typing captured while a sound/network operation blocked it.
-    if (event.audio && !pronunciation::busy()) return;
-    if (!event.pressed) return;
-    if (backspace && plain) {
-        if (backspaceRepeat.update(millis(), true, !pronunciation::busy())) handleKey(13, 0, state);
-    } else handleKey(event.key % 14, event.key / 14, state);
+    auto state=keyState(event.held);
+    const bool backspace=event.key==13;
+    const int direction=keyboard::directionIndex(event.key);
+    const bool plain=!state.fn && !state.ctrl && !state.alt && !state.opt;
+    const bool heldBackspace=event.held & keyboard::keyBit(13,0);
+    if(!plain || event.audio || pronunciation::busy())backspaceRepeat.update(millis(),heldBackspace,false);
+    if(!event.pressed) {
+        if(backspace)backspaceRepeat.update(millis(),false);
+        if(direction>=0)directionRepeats[direction].update(event.at,false);
+        return;
+    }
+    if(discardLookupInput) {
+        if(int32_t(event.at-lookupInputCutoff)<=0) {
+            if(direction>=0)directionRepeats[direction].update(event.at,true,false);
+            if(backspace)backspaceRepeat.update(millis(),true,false);
+            return;
+        }
+        discardLookupInput=false;
+    }
+    if(event.audio && !pronunciation::busy()) {
+        if(direction>=0)directionRepeats[direction].update(event.at,true,false);
+        return;
+    }
+    if(direction>=0) {
+        const bool allowed=allowDirectionRepeat(state,event.audio);
+        const bool initial=directionRepeats[direction].update(event.at,true,allowed);
+        if(initial || !allowed)handleKey(event.key%14,event.key/14,state);
+    } else if(backspace && plain) {
+        if(backspaceRepeat.update(millis(),true,!pronunciation::busy() && !selectionLookupQueued))handleKey(13,0,state);
+    } else handleKey(event.key%14,event.key/14,state);
 }
 
 void render() {
@@ -710,8 +941,8 @@ void render() {
         canvas.setFont(&kBodyFont);
         printAt(fitEnd(pronunciation::word(), 228), 5, 25, ACCENT);
         printAt(fitEnd(pronunciation::message(), 228), 5, 49);
-        printAt("Fn+P 或 ` 停止", 5, 77, MUTED);
-        printAt("Fn+= / Fn+- 调整音量", 5, 96, MUTED);
+        printHintAt("Fn+P 或 ` 停止", 5, 77);
+        printHintAt("Fn+= / Fn+- 调整音量", 5, 96);
         canvas.setFont(&kCjk12);
         printAt("音量 " + std::to_string(pronunciation::volume() * 100 / 255) + "%", 5, 121, MUTED);
     } else if (page == Page::Wifi) {
@@ -719,19 +950,21 @@ void render() {
         printAt("WiFi设置（2.4GHz）", 5, 22, ACCENT);
         printAt((wifiField == 0 ? "> " : "  ") + std::string("SSID: ") + fitTail(wifiSsid, 150), 5, 43);
         printAt((wifiField == 1 ? "> " : "  ") + std::string("密码: ") + fitTail(std::string(wifiPassword.size(), '*'), 150), 5, 62);
-        printAt("Tab/上下换字段 Enter保存", 5, 82, MUTED);
+        printHintAt("Tab/上下换字段 Enter保存", 5, 82);
         canvas.setFont(&kCjk12);
         printAt("联网获取将发送所选英文词", 5, 102, MUTED);
-        printAt(wifiError.empty() ? "`取消，空密码连接开放网络" : fitEnd(wifiError, 230), 5, 120, wifiError.empty() ? MUTED : FG);
+        if(wifiError.empty())printHintAt("`取消，空密码连接开放网络",5,120);
+        else printAt(fitEnd(wifiError,230),5,120,FG);
     } else if (page == Page::Help) {
         canvas.setFont(&kBodyFont);
-        const char* help[] = {"Tab词库 Shift+Tab反向", "Ctrl+Space 拼音/直接输入", "Enter查词 Space下一页", "方向键选择/翻页 Fn标点", "空格/数字选词 左右翻候选", "Fn+退格清空  ` 返回", wikiMode?"Fn+R重载  ` 返回搜索":"Fn+P朗读 Fn+W设置WiFi"};
-        for (size_t i = 0; i < 7; ++i) printAt(fitEnd(help[i], 232), 4, 23 + int(i) * 16);
+        const char* help[] = {"Tab词库 Shift+Tab反向", "Ctrl+Space 拼音/直接输入", "Ctrl+F选词 Enter查询", "方向键选择/翻页 Fn标点", "空格/数字选词 左右翻候选", "Fn+退格清空  ` 返回", wikiMode?"Fn+R重载  ` 返回搜索":"Fn+P朗读 Fn+W设置WiFi"};
+        for (size_t i = 0; i < 7; ++i) printHintAt(help[i], 4, 23 + int(i) * 16,232);
     } else if (page == Page::Definition) {
         canvas.setFont(&kCjk16);
         printAt(fitEnd(headword, 228), 5, 21, ACCENT);
         canvas.drawFastHLine(4, 40, 232, SELECT);
         canvas.setFont(&kBodyFont);
+        paintTextSelection();
         const int rows = definitionRows();
         for (int row = 0; row < rows; ++row) {
             const size_t i = size_t(definitionPage * rows + row);
@@ -739,11 +972,12 @@ void render() {
                 if (size_t(row)<wikiPager.frame().lines.size()) printAt(wikiPager.frame().lines[row],5,kDefinitionTop+row*definitionLineStep());
             } else if (i < lines.size()) printAt(lines[i], 5, kDefinitionTop + row * definitionLineStep());
         }
+        paintSelectionCursor();
         canvas.setFont(&kCjk12);
-        const std::string footer = wikiMode ? (std::string(wikiStorage.sample()?"试读 ":"")+std::to_string(wikiPager.page()+1)+"页 "+
-            std::to_string(uint64_t(wikiPager.frame().next)*100/wikiPager.length())+"% Space下 左上页") :
-            std::to_string(definitionPage + 1) + "/" + std::to_string(definitionPageCount()) + " Space下一页 Fn+P朗读";
-        printAt(footer, 5, 121, MUTED);
+        const std::string footer = textSelection.active() ? (selectionNotice.empty()?"Ctrl+方向选 Enter查询":selectionNotice) : !selectionNotice.empty()?selectionNotice : wikiMode ? (std::string(wikiStorage.sample()?"试读 ":"")+std::to_string(wikiPager.page()+1)+"页 "+
+            std::to_string(uint64_t(wikiPager.frame().next)*100/wikiPager.length())+"% Ctrl+F选词") :
+            std::to_string(definitionPage + 1) + "/" + std::to_string(definitionPageCount()) + " Ctrl+F选词 Fn+P朗读";
+        printHintAt(footer, 5, 121);
     } else {
         canvas.setFont(&kCjk16);
         printAt(query.empty() ? (pinyin ? "输入拼音…" : "输入单词…") : fitTail(query, 214), 5, 21, query.empty() ? MUTED : FG);
@@ -759,9 +993,9 @@ void render() {
             printAt(fitEnd(word, 222), 7, y);
         }
         if (query.empty()) {
-            printAt(pinyin ? "全拼输入，空格或数字选词" : "输入英文后按Enter查询", 5, 45, MUTED);
+            printHintAt(pinyin ? "全拼输入，空格或数字选词" : "输入英文后按Enter查询", 5, 45);
             if (wikiMode && !wikiStorage.archive.loaded()) {canvas.fillRect(0,42,240,44,BG);printAt("未安装中文维基数据",5,45,MUTED);printAt("复制 wikipedia/ 到SD根目录",5,63,MUTED);}
-            printAt(pinyin ? (wikiMode?"Enter阅读 Ctrl+Space输入":"Enter查词 Ctrl+Space输入") : "Ctrl+Space 切换拼音输入",5,63,MUTED);
+            printHintAt(pinyin ? (wikiMode?"Enter阅读 Ctrl+Space输入":"Enter查词 Ctrl+Space输入") : "Ctrl+Space 切换拼音输入",5,63);
         } else if (count == 0) printAt("未找到；可换词库或缩短输入", 5, 45, MUTED);
         if (!composition.empty()) {
             canvas.fillRect(0, 88, 240, 33, PANEL);
@@ -788,17 +1022,21 @@ void render() {
         canvas.setFont(&kCjk12);
         const std::string footer = wikiMode ? (std::string(wikiStorage.sample()?"百科测试 ":"百科 ")+std::to_string(wikiStorage.archive.loaded()?wikiStorage.archive.header().count:0)+"条 "+(pinyin?"拼音":"ABC")+" Ctrl+Space") :
             usingSd ? "SD " + std::to_string(dictionary().count()) + "词 "+(pinyin?"拼音":"ABC")+" Fn+H" : "演示 " + std::to_string(kDemoCount) + "词 "+(pinyin?"拼音":"ABC")+" Fn+H";
-        printAt(footer, 4, 121, MUTED);
+        printHintAt(footer, 4, 121,232);
     }
-    if (wikiMode && !wikiMessage.empty() && page!=Page::Help && page!=Page::Wifi) {
-        canvas.fillRect(0,118,240,17,PANEL);canvas.setFont(&kCjk12);printAt(fitEnd(wikiMessage,232),4,120,ACCENT);
+    if (!selectionLookupQueued && wikiMode && !wikiMessage.empty() && page!=Page::Help && page!=Page::Wifi) {
+        canvas.fillRect(0,118,240,17,PANEL);canvas.setFont(&kCjk12);printHintAt(wikiMessage,4,120,232);
     }
-    if (!wikiMode && !pronunciation::busy() && page != Page::Wifi && !pronunciation::message().empty() && int32_t(audioNoticeUntil - millis()) > 0) {
+    if (!textSelection.active() && !wikiMode && !pronunciation::busy() && page != Page::Wifi && !pronunciation::message().empty() && int32_t(audioNoticeUntil - millis()) > 0) {
         canvas.fillRect(0, 118, 240, 17, PANEL);
         canvas.setFont(&kCjk12);
         printAt(fitEnd(pronunciation::message(), 230), 4, 120, ACCENT);
     }
     canvas.pushSprite(0, 0);
+    if(selectionLookupQueued && !selectionLookupShown) {
+        selectionLookupShown=true;selectionLookupShownMs=millis();
+        Serial.printf("SELECTION_LOOKUP state=shown ms=%lu\n",(unsigned long)selectionLookupShownMs);
+    }
     dirty = false;
 }
 
@@ -936,6 +1174,16 @@ void printInputState() {
                   unsigned(composer.visibleCount()), unsigned(composer.pageStart()), selected, wordListStart(), wordListRows(),pinyin?"pinyin":"latin");
     Serial.printf("SOURCE %s\n",sourceId().c_str());
     Serial.printf("MODE %s\n",wikiMode?"wikipedia":"dictionary");
+    const auto range=textSelection.range();
+    Serial.printf("TEXT_SELECTION active=%d cursor=%lu begin=%lu end=%lu row=%u column=%u\n",textSelection.active(),
+        (unsigned long)textSelection.caret(),(unsigned long)range.begin,(unsigned long)range.end,
+        unsigned(textSelection.row()),unsigned(textSelection.column()));
+    Serial.printf("SELECTION_UI cursor_visible=%d lookup_pending=%d blink_ms=%lu direction_repeats=%lu\n",selectionBlink.visible(),selectionLookupQueued,
+        (unsigned long)CursorBlink::kIntervalMs,(unsigned long)directionRepeatEvents);
+    if(textSelection.active() && !selectionLookupQueued && range.end-range.begin<=dict::kMaxWordBytes) {
+        std::string raw;if(readSelectionBytes(range,raw))Serial.printf("SELECTION_TEXT: %s\n",textsel::queryText(raw).c_str());
+    }
+    if(!selectionNotice.empty())Serial.printf("SELECTION_NOTE: %s\n",selectionNotice.c_str());
     if (page == Page::Definition && wikiMode) {
         Serial.printf("WIKI_PAGE page=%lu pages=%lu offset=%lu next=%lu bytes=%lu end=%d absolute=%llu\n",(unsigned long)wikiPager.page(),
             (unsigned long)wikiPager.knownPages(),(unsigned long)wikiPager.frame().begin,(unsigned long)wikiPager.frame().next,
@@ -995,11 +1243,12 @@ void serialCommand() {
             else if (command == "sd dictionaries") listSdDictionaries();
             else if (command.rfind("sd remove-dictionary ",0)==0) removeSdDictionary(command.substr(21));
             else if (command == "status") {
-                Serial.printf("CardputerDict 0.6.4 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
+                Serial.printf("CardputerDict 0.7.2 board=%d heap=%u sd=%d words=%lu source=%s direction=%s\n", int(M5.getBoard()), ESP.getFreeHeap(), sdMounted,
                               (unsigned long)(wikiMode ? (wikiStorage.archive.loaded()?wikiStorage.archive.header().count:0) : usingSd ? dictionary().count() : kDemoCount), wikiMode ? "中文维基百科" : sourceName.c_str(), sourceDirection());
                 Serial.printf("display=%dx%d rotation=%u\n", screen().width(), screen().height(), unsigned(screen().getRotation()));
                 Serial.printf("boot_ready_ms=%lu\n", (unsigned long)bootReadyMs);
                 keyboard::diagnostics();
+                Serial.printf("navigation repeat_delay_ms=450 repeat_interval_ms=125 emitted=%lu\n",(unsigned long)directionRepeatEvents);
                 device::diagnostics();
                 Serial.printf("sd frequency=%lu dirs_ready=%d card_type=%u size_mb=%llu\n", (unsigned long)sdFrequency, sdDirectoriesReady,
                     unsigned(sdMounted ? SD.cardType() : CARD_NONE), (unsigned long long)(sdMounted ? SD.cardSize() / (1024 * 1024) : 0));
@@ -1083,6 +1332,17 @@ void serialCommand() {
                 }
                 if (page != Page::Search || composition.size() || !count || !keyboard::injectTaps(keys, count)) Serial.println("ERR keytest needs a search input and 1..32 supported characters");
                 else Serial.println("KEYTEST held_ms=8 gap_ms=4");
+            } else if(command.rfind("keytest-hold-direction ",0)==0) {
+                char key[32]={};unsigned long duration=0;
+                if(sscanf(command.c_str(),"keytest-hold-direction %31s %lu",key,&duration)!=2 || duration<4 || duration>2000) Serial.println("ERR invalid direction trace");
+                else {
+                    std::string name=key;uint64_t modifiers=0;
+                    if(name.rfind("ctrl-",0)==0) {modifiers=keyboard::keyBit(0,3);name=name.substr(5);}
+                    else if(name.rfind("fn-",0)==0) {modifiers=keyboard::keyBit(0,2);name=name.substr(3);}
+                    const int index=name=="up"?0:name=="down"?1:name=="left"?2:name=="right"?3:-1;
+                    if(index<0 || !keyboard::injectTaps(&keyboard::kDirectionKeyIds[size_t(index)],1,uint32_t(duration),4,modifiers)) Serial.println("ERR direction trace busy or invalid");
+                    else Serial.printf("KEYTEST direction=%s held_ms=%lu\n",key,duration);
+                }
             } else if (command == "keytest-hold-backspace") {
                 const uint8_t key = 13;
                 Serial.println(page == Page::Search && keyboard::injectTaps(&key, 1, 1200, 4) ? "KEYTEST backspace held_ms=1200" : "ERR keytest busy");
@@ -1091,7 +1351,14 @@ void serialCommand() {
             } else if (command.rfind("press ", 0) == 0) {
                 const auto key = command.substr(6);
                 Keyboard_Class::KeysState state;
-                if (key == "tab") handleKey(0,1,state);
+                if (key == "select" || key == "ctrl-f") {state.ctrl=true;handleKey(5,2,state);}
+                else if (key == "ctrl-s") {state.ctrl=true;handleKey(3,2,state);}
+                else if (key == "query-selection") {state.ctrl=true;handleKey(13,2,state);}
+                else if (key == "ctrl-up") {state.ctrl=true;handleKey(11,2,state);}
+                else if (key == "ctrl-down") {state.ctrl=true;handleKey(11,3,state);}
+                else if (key == "ctrl-left") {state.ctrl=true;handleKey(10,3,state);}
+                else if (key == "ctrl-right") {state.ctrl=true;handleKey(12,3,state);}
+                else if (key == "tab") handleKey(0,1,state);
                 else if (key == "previous-dictionary") {state.shift=true;handleKey(0,1,state);}
                 else if (key == "input") {state.ctrl=true;handleKey(13,3,state);}
                 else if (key == "fn-e") {state.fn=true;handleKey(3,1,state);}
@@ -1183,21 +1450,35 @@ void setup() {
 
 void loop() {
     if (!spriteReady) { delay(100); return; }
+    if(selectionLookupQueued && selectionLookupShown) {
+        const auto started=millis();selectionLookupQueued=selectionLookupShown=false;
+        Serial.printf("SELECTION_LOOKUP state=started ms=%lu shown_ms=%lu\n",(unsigned long)started,(unsigned long)selectionLookupShownMs);
+        lookupTextSelection();lookupInputCutoff=millis();discardLookupInput=true;suppressDirectionRepeats();
+        if(textSelection.active())selectionBlink.show(millis());
+        dirty=true;
+    }
     M5.update();
     keyboard::Event event;
     for (int count = 0; count < 96 && keyboard::next(event); ++count) handleKeyEvent(event);
     const uint64_t held = keyboard::heldKeys();
     const auto state = keyState(held);
-    const bool allowBackspace = !state.fn && !state.ctrl && !state.alt && !state.opt && !pronunciation::busy();
+    const bool allowBackspace = !state.fn && !state.ctrl && !state.alt && !state.opt && !pronunciation::busy() && !selectionLookupQueued;
     if (backspaceRepeat.update(millis(), held & keyboard::keyBit(13, 0), allowBackspace)) handleKey(13, 0, state);
+    for(size_t i=0;i<keyboard::kDirectionKeyIds.size();++i) {
+        const auto key=keyboard::kDirectionKeyIds[i];
+        if(directionRepeats[i].update(millis(),held & (uint64_t(1)<<key),allowDirectionRepeat(state))) {
+            ++directionRepeatEvents;handleKey(key%14,key/14,state);
+        }
+    }
     pronunciation::tick();
     restoreAfterAudioNetwork();
+    if(selectionBlink.update(millis(),page==Page::Definition && textSelection.active() && !selectionLookupQueued && !pronunciation::busy()))dirty=true;
     if (pronunciation::changed()) { audioNoticeUntil = millis() + 2500; dirty = true; }
     if (audioNoticeUntil && int32_t(millis() - audioNoticeUntil) >= 0) { audioNoticeUntil = 0; dirty = true; }
     // Repeated deletion must not wait for an SD lookup between every repeat.
     // Keep the input responsive, then refresh matches after physical release.
     if (searchPending && !(keyboard::heldKeys() & keyboard::keyBit(13, 0)) && int32_t(millis() - searchAt) >= 0) refreshMatches();
-    if (M5Cardputer.BtnA.wasPressed() && !pronunciation::busy() && page != Page::Wifi) { page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
+    if (M5Cardputer.BtnA.wasPressed() && !pronunciation::busy() && page != Page::Wifi) { cancelTextSelection();suppressDirectionRepeats();page = page == Page::Help ? Page::Search : Page::Help; dirty = true; }
     serialCommand();
     if (dirty) render();
     delay(1);

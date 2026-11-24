@@ -1,0 +1,17 @@
+CardputerDict 0.7.2 board=14 heap=93188 sd=1 words=770611 source=ECDICT 英汉词典 direction=en-zh
+display=240x135 rotation=0
+boot_ready_ms=3186
+keyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=27563 max_interval_us=1000
+keyboard driver=gpio-matrix fifo_events=0 fifo_overflows=0 i2c_errors=0
+navigation repeat_delay_ms=450 repeat_interval_ms=125 emitted=0
+DEVICE model=Cardputer board_id=14 keyboard=gpio-matrix audio=NS4168 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=0 es8311=0
+sd frequency=4000000 dirs_ready=1 card_type=3 size_mb=7540
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=4 start=0 selected=0 count=5
+lexicons en=770611 zh=0 ime=0
+cache path=/dictionaries/ecdict.ifo mode=cache load_ms=1535 saved=0
+WIKI mode=0 loaded=0 sample=0 entries=0 text_bytes=0 input=latin
+note=
+AUDIO state=idle word= wifi_configured=1 wifi_connected=0 volume=223 frames=0 peak=0 path= heap=93188
+CMD_DONE

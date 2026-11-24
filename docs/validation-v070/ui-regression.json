@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "normal_reading_header_and_body_pixels_unchanged": true,
+  "comparison": "before-apple.png vs device/english-result.png",
+  "footer_updated_for_ctrl_s": true
+}

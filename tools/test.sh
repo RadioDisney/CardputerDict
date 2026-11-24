@@ -24,6 +24,12 @@ c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include 
 build/tests/dictionary_sources_test
 c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/navigation_keys_test.cpp -o build/tests/navigation_keys_test
 build/tests/navigation_keys_test
+c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/text_selection_test.cpp -o build/tests/text_selection_test
+build/tests/text_selection_test
+c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/cursor_blink_test.cpp -o build/tests/cursor_blink_test
+build/tests/cursor_blink_test
+c++ -std=c++17 -Wall -Wextra -Werror -fsanitize=address,undefined -g -I include tests/navigation_repeat_test.cpp -o build/tests/navigation_repeat_test
+build/tests/navigation_repeat_test
 python3 -m unittest discover -s tests -p 'test_*.py' -v
 if [ -f sdcard/dictionaries/ecdict.ifo ]; then
     build/tests/core_test sdcard/dictionaries/ecdict

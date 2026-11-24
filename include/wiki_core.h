@@ -67,7 +67,8 @@ public:
 private:
     Header header_; dict::Reader *index_=nullptr,*titles_=nullptr; TextReader* text_=nullptr; bool loaded_=false;
 };
-struct Frame { std::vector<std::string> lines; uint32_t begin=0,next=0; bool end=false; };
+struct LineSpan {uint32_t begin=0,end=0;};
+struct Frame { std::vector<std::string> lines; std::vector<LineSpan> spans; uint32_t begin=0,next=0; bool end=false; };
 class Pager {
 public:
     using Measure=std::function<int(const std::string&)>;
@@ -120,21 +121,21 @@ private:
     }
     bool readPage(uint32_t offset,Frame& result) {
         if (offset>=entry_.length) return false;
-        Frame next;next.begin=offset;std::string line;
+        Frame next;next.begin=offset;std::string line;uint32_t lineStart=offset;
         while (offset<entry_.length && next.lines.size()<size_t(rows_)) {
             uint8_t first;if (!byte(offset,first)) return false;
             if (first=='\r') {++offset;continue;}
-            if (first=='\n') {next.lines.push_back(line);line.clear();++offset;continue;}
+            if (first=='\n') {next.lines.push_back(line);next.spans.push_back({lineStart,offset});line.clear();++offset;lineStart=offset;continue;}
             std::string glyph;const size_t wanted=std::min(dict::utf8Length(first),size_t(entry_.length-offset));
             for (size_t i=0;i<wanted;++i) {uint8_t b;if (!byte(offset+i,b)) return false;glyph+=char(b);}
             const auto decoded=ui::decode(glyph,0);
             if (decoded.code==0xfffd) glyph="\xef\xbf\xbd";
             if (first=='\t' || first==0) glyph=" ";
-            if (!line.empty() && (line.size()+glyph.size()>1024 || measure_(line+glyph)>width_)) {next.lines.push_back(line);line.clear();continue;}
+            if (!line.empty() && (line.size()+glyph.size()>1024 || measure_(line+glyph)>width_)) {next.lines.push_back(line);next.spans.push_back({lineStart,offset});line.clear();lineStart=offset;continue;}
             line+=glyph;offset+=uint32_t(decoded.bytes);
         }
-        if (!line.empty() && next.lines.size()<size_t(rows_)) next.lines.push_back(line);
-        if (next.lines.empty()) next.lines.emplace_back();
+        if (!line.empty() && next.lines.size()<size_t(rows_)) {next.lines.push_back(line);next.spans.push_back({lineStart,offset});}
+        if (next.lines.empty()) {next.lines.emplace_back();next.spans.push_back({offset,offset});}
         next.next=offset;next.end=offset>=entry_.length;result=std::move(next);return true;
     }
     bool load(uint32_t number,uint32_t offset) {

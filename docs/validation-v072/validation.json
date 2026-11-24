@@ -1,0 +1,25 @@
+{
+  "reading": {
+    "recolored_pixels": 117,
+    "color_pairs": {
+      "((140, 146, 148), (74, 203, 206))": 117
+    },
+    "unchanged_geometry": true
+  },
+  "selection": {
+    "recolored_pixels": 192,
+    "color_pairs": {
+      "((140, 146, 148), (74, 203, 206))": 192
+    },
+    "unchanged_geometry": true
+  },
+  "search": {
+    "recolored_pixels": 312,
+    "color_pairs": {
+      "((140, 146, 148), (74, 203, 206))": 312
+    },
+    "unchanged_geometry": true
+  },
+  "passed": true,
+  "body_unchanged": true
+}

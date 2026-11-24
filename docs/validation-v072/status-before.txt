@@ -1,0 +1,26 @@
+P state=shown ms=4668236
+SELECTION_LOOKUP state=started ms=4668238 shown_ms=4668236
+INDEX /dictionaries/cedict.ifo mode=cache ms=853 bytes=12480 saved=0
+Loaded CC-CEDICT 汉英: 198650 headwords, 12416 sparse index bytes
+INDEX /dictionaries/pinyin.ifo mode=cache ms=665 bytes=5416 saved=0
+Loaded CC-CEDICT Pinyin IME: 85610 headwords, 5352 sparse index bytes
+LOOKUP: 学院
+CardputerDict 0.7.1 board=14 heap=39000 sd=1 words=198650 source=CC-CEDICT 汉英 direction=zh-en
+display=240x135 rotation=0
+boot_ready_ms=3184
+keyboard scanner=task scan_tick_ms=1 debounce_ms=2 queued=0 dropped=0 scans=4682747 max_interval_us=41328
+keyboard driver=gpio-matrix fifo_events=0 fifo_overflows=0 i2c_errors=0
+navigation repeat_delay_ms=450 repeat_interval_ms=125 emitted=20
+DEVICE model=Cardputer board_id=14 keyboard=gpio-matrix audio=NS4168 flash_bytes=8388608 sd_sck=40 sd_miso=39 sd_mosi=14 sd_cs=12 tca8418=0 es8311=0
+sd frequency=4000000 dirs_ready=1 card_type=3 size_mb=7540
+spacing half=1 full=2
+definition font_height=14 line_gap=4 line_step=18 rows=4
+results line_step=17 rows=4 start=0 selected=0 count=5
+lexicons en=770611 zh=198650 ime=85610
+cache path=/dictionaries/ecdict.ifo mode=cache load_ms=1539 saved=0
+cache path=/dictionaries/cedict.ifo mode=cache load_ms=853 saved=0
+cache path=/dictionaries/pinyin.ifo mode=cache load_ms=665 saved=0
+WIKI mode=0 loaded=0 sample=0 entries=0 text_bytes=0 input=pinyin
+note=
+AUDIO state=idle word=tech wifi_configured=1 wifi_connected=0 volume=223 frames=48960 peak=24805 path=/audio/cache/en/tech.mp3 heap=39000
+CMD_DONE
